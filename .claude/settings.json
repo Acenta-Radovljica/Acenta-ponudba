@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(node *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(grep *)",
+      "Bash(head *)",
+      "Bash(wc *)",
+      "Bash(start *)",
+      "Bash(cp *)",
+      "Bash(mkdir *)"
+    ],
+    "deny": [
+      "Bash(git push *)",
+      "Bash(rm -rf *)",
+      "Bash(git reset --hard *)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"const f=process.env.CLAUDE_TOOL_INPUT_FILE_PATH||''; if(f.endsWith('.js')){ const c=require('fs').readFileSync(f,'utf8'); if(c.includes('process.exit(0)') && c.includes('function ')) console.warn('OPOZORILO: process.exit(0) je morda znotraj funkcije — preveri!'); if(c.includes('max_tokens: 2048')) console.warn('OPOZORILO: max_tokens je 2048 — priporoča se 4096'); }\""
+          }
+        ]
+      }
+    ]
+  }
+}

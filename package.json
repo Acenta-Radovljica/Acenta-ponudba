@@ -1,0 +1,25 @@
+{
+  "name": "acenta-ponudbe",
+  "version": "2.0.0",
+  "description": "PDF generator za ponudbe Acenta d.o.o. (AI del vodi Make.com)",
+  "main": "src/run.js",
+  "type": "module",
+  "scripts": {
+    "generate": "node --env-file=.env src/02-generate.js",
+    "pdf": "node --env-file=.env src/03-pdf.js",
+    "transcribe": "node --env-file=.env src/01-transcribe.js",
+    "start": "node --env-file=.env src/run.js",
+    "server": "node --env-file=.env src/server.js",
+    "app": "node --env-file=.env app.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.95.0",
+    "express": "^5.2.1",
+    "groq-sdk": "^1.1.2",
+    "html-to-docx": "^1.8.0",
+    "puppeteer": "^24.42.0"
+  },
+  "devDependencies": {
+    "mammoth": "^1.12.0"
+  }
+}

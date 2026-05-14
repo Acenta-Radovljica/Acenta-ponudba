@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+<meta charset="UTF-8">
+<title>Ponudba — Acenta d.o.o.</title>
+</head>
+<body style="font-family:Calibri,Arial,sans-serif;font-size:11pt;color:#1a1a1a;margin:0;padding:0;">
+
+<!-- HEADER -->
+<table width="100%" cellpadding="20" cellspacing="0" style="background-color:#0B0F10;border-collapse:collapse;">
+  <tr>
+    <td style="font-size:22pt;font-weight:bold;color:#ffffff;letter-spacing:2px;">acenta</td>
+    <td style="text-align:right;vertical-align:middle;">
+      <span style="background-color:#FF0A60;color:#ffffff;font-size:9pt;font-weight:bold;padding:5px 14px;text-transform:uppercase;">{{STORITEV_BADGE}}</span>
+    </td>
+  </tr>
+</table>
+
+<!-- TITLE BLOCK -->
+<div style="padding:24px 32px 16px;border-bottom:3px solid #0180AE;">
+  <table cellpadding="0" cellspacing="0" style="border-collapse:collapse;font-size:9.5pt;margin-bottom:14px;">
+    <tr>
+      <td style="padding:2px 20px 2px 0;color:#888;">Datum:</td>
+      <td style="padding:2px 0;color:#1a1a1a;font-weight:bold;">{{DATUM}}</td>
+    </tr>
+    <tr>
+      <td style="padding:2px 20px 2px 0;color:#888;">Ponudba:</td>
+      <td style="padding:2px 0;color:#1a1a1a;font-weight:bold;">{{STEVILKA_PONUDBE}}</td>
+    </tr>
+    <tr>
+      <td style="padding:2px 20px 2px 0;color:#888;">Stranka:</td>
+      <td style="padding:2px 0;color:#1a1a1a;font-weight:bold;">{{IME_STRANKE}}</td>
+    </tr>
+    {{STRANKA_DETAILS_WORD}}
+    <tr>
+      <td style="padding:2px 20px 2px 0;color:#888;">Info:</td>
+      <td style="padding:2px 0;color:#555;">{{DODATNI_META}}</td>
+    </tr>
+  </table>
+  <p style="font-size:22pt;font-weight:bold;color:#0B0F10;margin:0 0 4px 0;">{{NASLOV}}</p>
+  <p style="font-size:12pt;color:#00AFAA;margin:0;">{{PODNASLOV}}</p>
+</div>
+
+<!-- CONTENT -->
+<div style="padding:20px 32px;">
+
+  <!-- SECTION 1 -->
+  <p style="font-size:13pt;font-weight:bold;color:#0B0F10;margin:0 0 8px 0;padding-bottom:5px;border-bottom:2px solid #00AFAA;">
+    <span style="background-color:#FF0A60;color:#ffffff;font-size:10pt;padding:2px 8px;margin-right:6px;">1</span>
+    ZAKAJ TA STORITEV?
+  </p>
+  <p style="font-size:11pt;color:#333;line-height:1.7;margin:0 0 20px 0;">{{UVODNI_ODSTAVEK}}</p>
+
+  <!-- SECTION 2 -->
+  <p style="font-size:13pt;font-weight:bold;color:#0B0F10;margin:0 0 8px 0;padding-bottom:5px;border-bottom:2px solid #00AFAA;">
+    <span style="background-color:#FF0A60;color:#ffffff;font-size:10pt;padding:2px 8px;margin-right:6px;">2</span>
+    KAJ VKLJUČUJE PONUDBA?
+  </p>
+  {{KARTICE_STORITEV_WORD}}
+
+  <!-- SECTION 3 -->
+  <p style="font-size:13pt;font-weight:bold;color:#0B0F10;margin:20px 0 6px 0;padding-bottom:5px;border-bottom:2px solid #00AFAA;">
+    <span style="background-color:#FF0A60;color:#ffffff;font-size:10pt;padding:2px 8px;margin-right:6px;">3</span>
+    CENOVNA STRUKTURA
+  </p>
+  <p style="font-size:9pt;color:#999;font-style:italic;margin:0 0 8px 0;">Vse cene so v EUR, brez DDV (22 %). {{OPOMBA_CENE}}</p>
+
+  <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;font-size:10pt;">
+    <thead>
+      <tr style="background-color:#0180AE;">
+        <th style="padding:10px 14px;text-align:left;color:#ffffff;font-size:9pt;text-transform:uppercase;border:1px solid #0069a0;">Storitev</th>
+        <th style="padding:10px 14px;text-align:right;color:#ffffff;font-size:9pt;text-transform:uppercase;border:1px solid #0069a0;">Vzpostavitev (1×)</th>
+        <th style="padding:10px 14px;text-align:right;color:#ffffff;font-size:9pt;text-transform:uppercase;border:1px solid #0069a0;">Mesečno</th>
+        <th style="padding:10px 14px;text-align:left;color:#ffffff;font-size:9pt;text-transform:uppercase;border:1px solid #0069a0;">Opomba</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{VRSTICE_CEN}}
+      <tr style="background-color:#0B0F10;">
+        <td style="padding:11px 14px;color:#ffffff;font-weight:bold;font-size:10.5pt;border:1px solid #222;">SKUPAJ</td>
+        <td style="padding:11px 14px;color:#ffffff;font-weight:bold;font-size:10.5pt;border:1px solid #222;text-align:right;">{{SKUPAJ_VZPOSTAVITEV}}</td>
+        <td style="padding:11px 14px;color:#ffffff;font-weight:bold;font-size:10.5pt;border:1px solid #222;text-align:right;">{{SKUPAJ_MESECNO}}</td>
+        <td style="padding:11px 14px;border:1px solid #222;"></td>
+      </tr>
+    </tbody>
+  </table>
+
+  {{POGOJI_HTML_WORD}}
+
+  <!-- SECTION 4 -->
+  <p style="font-size:13pt;font-weight:bold;color:#0B0F10;margin:24px 0 8px 0;padding-bottom:5px;border-bottom:2px solid #00AFAA;">
+    <span style="background-color:#FF0A60;color:#ffffff;font-size:10pt;padding:2px 8px;margin-right:6px;">4</span>
+    KAKO POTEKA SODELOVANJE?
+  </p>
+
+  <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+    <tr>
+      <td style="padding:0 6px 6px 0;vertical-align:top;">
+        <div style="border:1px solid #dde3e6;padding:12px 14px;">
+          <div style="font-size:7.5pt;font-weight:bold;color:#00AFAA;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">KORAK 1</div>
+          <div style="font-size:10.5pt;font-weight:bold;color:#0B0F10;margin-bottom:5px;">{{NASLOV_KORAK_1}}</div>
+          <div style="font-size:9pt;color:#666;line-height:1.6;">{{KORAK_1}}</div>
+        </div>
+      </td>
+      <td style="padding:0 0 6px 6px;vertical-align:top;">
+        <div style="border:1px solid #dde3e6;padding:12px 14px;">
+          <div style="font-size:7.5pt;font-weight:bold;color:#00AFAA;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">KORAK 2</div>
+          <div style="font-size:10.5pt;font-weight:bold;color:#0B0F10;margin-bottom:5px;">{{NASLOV_KORAK_2}}</div>
+          <div style="font-size:9pt;color:#666;line-height:1.6;">{{KORAK_2}}</div>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:0 6px 0 0;vertical-align:top;">
+        <div style="border:1px solid #dde3e6;padding:12px 14px;">
+          <div style="font-size:7.5pt;font-weight:bold;color:#00AFAA;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">KORAK 3</div>
+          <div style="font-size:10.5pt;font-weight:bold;color:#0B0F10;margin-bottom:5px;">{{NASLOV_KORAK_3}}</div>
+          <div style="font-size:9pt;color:#666;line-height:1.6;">{{KORAK_3}}</div>
+        </div>
+      </td>
+      <td style="padding:0 0 0 6px;vertical-align:top;">
+        <div style="border:1px solid #dde3e6;padding:12px 14px;">
+          <div style="font-size:7.5pt;font-weight:bold;color:#00AFAA;text-transform:uppercase;letter-spacing:1px;margin-bottom:2px;">KORAK 4</div>
+          <div style="font-size:10.5pt;font-weight:bold;color:#0B0F10;margin-bottom:5px;">{{NASLOV_KORAK_4}}</div>
+          <div style="font-size:9pt;color:#666;line-height:1.6;">{{KORAK_4}}</div>
+        </div>
+      </td>
+    </tr>
+  </table>
+
+  <!-- CTA -->
+  <div style="background-color:#0B0F10;padding:20px 26px;margin-top:18px;border-left:4px solid #FF0A60;">
+    <p style="font-size:13pt;font-weight:bold;color:#ffffff;margin:0 0 5px 0;">Začnimo sodelovanje</p>
+    <p style="font-size:10pt;color:#cccccc;line-height:1.6;margin:0 0 8px 0;">
+      Pripravljeni na naslednji korak? Kontaktirajte nas za brezplačno predstavitev in odgovorili vam bomo na vsa vprašanja.
+    </p>
+    <span style="font-size:10.5pt;font-weight:bold;color:#ffffff;">
+      info@acenta.si &nbsp;·&nbsp; www.acenta.si &nbsp;·&nbsp; +386 (0) 4 530 28 28
+    </span>
+  </div>
+
+  <!-- SIGNATURE -->
+  <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-top:24px;border-top:1px solid #dde3e6;">
+    <tr>
+      <td style="padding-top:14px;vertical-align:top;">
+        <div style="font-size:11pt;font-weight:bold;color:#0B0F10;">{{IME_KOMERCIALISTA}}</div>
+        <div style="font-size:10pt;color:#00AFAA;">{{NAZIV_KOMERCIALISTA}}</div>
+        <div style="font-size:9.5pt;color:#888;">{{EMAIL_KOMERCIALISTA}}</div>
+      </td>
+      <td style="padding-top:14px;text-align:right;vertical-align:top;">
+        <div style="font-size:14pt;font-weight:bold;color:#00AFAA;letter-spacing:1.5px;">acenta</div>
+        <div style="font-size:9pt;color:#999;">Radovljica, {{DATUM}}</div>
+      </td>
+    </tr>
+  </table>
+
+</div>
+
+<!-- COMPANY SECTION -->
+<div style="padding:20px 32px;border-top:2px solid #e0e5e8;margin-top:8px;">
+  <p style="font-size:13pt;font-weight:bold;color:#0B0F10;margin:0 0 14px 0;padding-bottom:5px;border-bottom:2px solid #00AFAA;">
+    <span style="background-color:#FF0A60;color:#ffffff;font-size:10pt;padding:2px 8px;margin-right:6px;">5</span>
+    O PODJETJU <span style="color:#00AFAA;">ACENTA</span>
+  </p>
+
+  <table width="100%" cellpadding="14" cellspacing="4" style="border-collapse:collapse;margin-bottom:14px;">
+    <tr>
+      <td style="background-color:#0B0F10;color:#ffffff;text-align:center;border-bottom:3px solid #FF0A60;padding:14px;">
+        <span style="font-size:18pt;font-weight:bold;display:block;">25</span>
+        <span style="font-size:8pt;color:#aaa;">let izkušenj</span>
+      </td>
+      <td style="background-color:#0B0F10;color:#ffffff;text-align:center;border-bottom:3px solid #FF0A60;padding:14px;">
+        <span style="font-size:18pt;font-weight:bold;display:block;">3600+</span>
+        <span style="font-size:8pt;color:#aaa;">zadovoljnih podjetij</span>
+      </td>
+      <td style="background-color:#0B0F10;color:#ffffff;text-align:center;border-bottom:3px solid #FF0A60;padding:14px;">
+        <span style="font-size:18pt;font-weight:bold;display:block;">125+</span>
+        <span style="font-size:8pt;color:#aaa;">let skupnih izkušenj</span>
+      </td>
+    </tr>
+  </table>
+
+  <table width="100%" cellpadding="12" cellspacing="4" style="border-collapse:collapse;">
+    <tr>
+      <td style="border:1px solid #dde3e6;border-top:3px solid #00AFAA;vertical-align:top;padding:12px 14px;">
+        <p style="font-size:10pt;font-weight:bold;color:#0B0F10;margin:0 0 6px 0;">Merljivi rezultati</p>
+        <ul style="margin:0;padding-left:14px;font-size:9pt;color:#555;line-height:1.8;">
+          <li>Analitičen pristop z jasno definiranimi KPI-ji</li>
+          <li>SWOT analiza in definicija ciljnih skupin</li>
+          <li>Strategija prilagojena vašim poslovnim ciljem</li>
+          <li>Odgovornost za vsak korak izvedbe</li>
+        </ul>
+      </td>
+      <td style="border:1px solid #dde3e6;border-top:3px solid #00AFAA;vertical-align:top;padding:12px 14px;">
+        <p style="font-size:10pt;font-weight:bold;color:#0B0F10;margin:0 0 6px 0;">Zaupanje naročnikov</p>
+        <ul style="margin:0;padding-left:14px;font-size:9pt;color:#555;line-height:1.8;">
+          <li>Več kot polovica naročnikov z nami &gt; 10 let</li>
+          <li>Uradni Google Partner</li>
+          <li>Izobraževanje vaših zaposlenih</li>
+          <li>Pogodbeni partner Botrstva Slovenije</li>
+        </ul>
+      </td>
+      <td style="border:1px solid #dde3e6;border-top:3px solid #00AFAA;vertical-align:top;padding:12px 14px;">
+        <p style="font-size:10pt;font-weight:bold;color:#0B0F10;margin:0 0 6px 0;">Hitra podpora</p>
+        <ul style="margin:0;padding-left:14px;font-size:9pt;color:#555;line-height:1.8;">
+          <li>Odziv na povpraševanja v 1 delovnem dnevu</li>
+          <li>Tehnična pomoč v 8 urah</li>
+          <li>Redni skupni sestanki z jasnim poročanjem</li>
+          <li>Prilagoditve strategije glede na rezultate</li>
+        </ul>
+      </td>
+    </tr>
+  </table>
+
+  <!-- REFERENCE -->
+  <p style="font-size:8.5pt;font-weight:bold;color:#888;text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px 0;padding-top:16px;border-top:1px solid #e0e5e8;">Nekatere naše reference</p>
+  <p style="font-size:9pt;color:#555;line-height:2;margin:0;">
+    Hotel Astoria Bled &nbsp;·&nbsp; Royal Bled Golf &nbsp;·&nbsp; JGZ Brdo &nbsp;·&nbsp; Life Class Hotels &amp; Spa &nbsp;·&nbsp; Kozjanski park &nbsp;·&nbsp; Greva &nbsp;·&nbsp; ABC Rentacar &nbsp;·&nbsp; Liberty Adriatic &nbsp;·&nbsp; Dostavasadik &nbsp;·&nbsp; Grad Podsreda &nbsp;·&nbsp; Sportmix &nbsp;·&nbsp; Elpro &nbsp;·&nbsp; Višja strokovna šola Bled
+  </p>
+</div>
+
+<!-- FOOTER -->
+<div style="background-color:#0B0F10;padding:12px 32px;text-align:center;font-size:7.5pt;color:#aaaaaa;margin-top:16px;line-height:2;">
+  <span style="font-size:8.5pt;font-weight:bold;color:#cccccc;letter-spacing:1px;display:block;">ACENTA d.o.o.</span>
+  Kranjska cesta 4, 4240 Radovljica &nbsp;|&nbsp; T: +386 (0) 4 530 28 28 &nbsp;|&nbsp; info@acenta.si &nbsp;|&nbsp; www.acenta.si<br>
+  ID za DDV: SI97997404 &nbsp;|&nbsp; TRR: SI56 0700 0000 4418 828 &nbsp;|&nbsp; Gorenjska banka d.d.
+</div>
+
+</body>
+</html>

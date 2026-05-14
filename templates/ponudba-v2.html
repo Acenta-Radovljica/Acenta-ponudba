@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ponudba — Acenta d.o.o.</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ═══════════════════════════════════════════════════════
+     ACENTA d.o.o. — Predloga ponudbe v2
+     Brand: #00AFAA teal · #24272A dark · Exo 2
+     ═══════════════════════════════════════════════════════ */
+
+  :root {
+    --teal:       #00AFAA;
+    --teal-dark:  #0180AE;
+    --teal-light: #7EBAB5;
+    --teal-bg:    #f0fafa;
+    --dark:       #24272A;
+    --pitch:      #0B0F10;
+    --accent:     #FF0A60;
+    --gray:       #676767;
+    --gray-light: #a0a0a0;
+    --border:     #e4e8ea;
+    --white:      #ffffff;
+    --radius:     14px;
+    --radius-sm:  8px;
+  }
+
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Exo 2', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10.5pt;
+    color: var(--dark);
+    background: var(--white);
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ── HEADER ─────────────────────────────────────────── */
+  .header {
+    background: var(--pitch);
+    padding: 44px 52px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Decorative geometric shapes in header */
+  .header::before {
+    content: '';
+    position: absolute;
+    top: -60px;
+    right: -40px;
+    width: 280px;
+    height: 280px;
+    border: 2px solid rgba(255,255,255,0.12);
+    border-radius: 50%;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -90px;
+    right: 120px;
+    width: 200px;
+    height: 200px;
+    border: 2px solid rgba(255,255,255,0.08);
+    border-radius: 50%;
+  }
+
+  .header-inner {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .logo-block {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .logo-text {
+    font-size: 28pt;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: 2px;
+    line-height: 1;
+  }
+  .logo-divider {
+    width: 1px;
+    height: 36px;
+    background: rgba(255,255,255,0.35);
+  }
+  .logo-tagline {
+    font-size: 9pt;
+    font-weight: 300;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.5;
+    letter-spacing: 0.5px;
+  }
+
+  .service-badge {
+    background: var(--accent);
+    color: var(--white);
+    font-size: 8.5pt;
+    font-weight: 600;
+    padding: 8px 20px;
+    border-radius: 100px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    border: none;
+  }
+
+  /* Small decorative diamond shapes */
+  .header-deco {
+    position: absolute;
+    z-index: 1;
+  }
+  .header-deco-1 {
+    top: 20px;
+    right: 300px;
+    width: 8px;
+    height: 8px;
+    background: rgba(255,255,255,0.2);
+    transform: rotate(45deg);
+  }
+  .header-deco-2 {
+    bottom: 16px;
+    left: 45%;
+    width: 6px;
+    height: 6px;
+    background: rgba(255,255,255,0.15);
+    transform: rotate(45deg);
+  }
+  .header-deco-3 {
+    top: 32px;
+    right: 180px;
+    width: 4px;
+    height: 4px;
+    background: rgba(255,255,255,0.25);
+    transform: rotate(45deg);
+  }
+
+  /* ── TITLE BLOCK ────────────────────────────────────── */
+  .title-block {
+    padding: 40px 52px 0;
+  }
+
+  .title-left {
+    flex: 1;
+  }
+  .proposal-title {
+    font-size: 28pt;
+    font-weight: 700;
+    color: var(--dark);
+    line-height: 1.15;
+    margin: 20px 0 6px;
+    letter-spacing: -0.3px;
+  }
+  .proposal-subtitle {
+    font-size: 13pt;
+    font-weight: 400;
+    color: var(--teal);
+    margin-bottom: 0;
+  }
+
+  .title-right {
+    flex-shrink: 0;
+    padding-top: 6px;
+  }
+  .meta-table {
+    font-size: 9pt;
+    color: var(--gray);
+    line-height: 2;
+    font-weight: 300;
+    text-align: left;
+  }
+  .meta-table strong {
+    font-weight: 600;
+    color: var(--dark);
+  }
+  .meta-label {
+    display: inline-block;
+    min-width: 60px;
+    text-align: left;
+    margin-right: 6px;
+  }
+
+  .title-divider {
+    margin: 24px 52px 0;
+    border: none;
+    height: 3px;
+    background: linear-gradient(90deg, var(--teal-dark), var(--teal), transparent);
+    border-radius: 3px;
+  }
+
+  /* ── CONTENT ────────────────────────────────────────── */
+  .content {
+    padding: 32px 52px 20px;
+  }
+
+  /* Section styling */
+  .section {
+    margin-bottom: 34px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+  .section-number {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent), #ff4d8a);
+    color: var(--white);
+    font-size: 13pt;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .section-title {
+    font-size: 13pt;
+    font-weight: 700;
+    color: var(--dark);
+    letter-spacing: 0.3px;
+  }
+  .section-title .accent {
+    color: var(--teal);
+  }
+
+  .section-text {
+    font-size: 10.5pt;
+    color: #444;
+    line-height: 1.75;
+    font-weight: 300;
+    max-width: 680px;
+  }
+
+  /* ── SERVICE CARDS ──────────────────────────────────── */
+  .services-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .service-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--teal);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 18px 22px;
+    transition: box-shadow 0.2s ease;
+    page-break-inside: avoid;
+  }
+  .service-card:hover {
+    box-shadow: 0 4px 20px rgba(0, 175, 170, 0.08);
+  }
+  .service-card .card-title {
+    font-size: 11.5pt;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 2px;
+  }
+  .service-card .card-subtitle {
+    font-size: 9pt;
+    color: var(--gray);
+    font-weight: 300;
+    font-style: italic;
+    margin-bottom: 10px;
+  }
+  .service-card ul {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 24px;
+  }
+  .service-card ul li {
+    font-size: 9.5pt;
+    color: #555;
+    font-weight: 300;
+    padding: 7px 0 7px 18px;
+    position: relative;
+    border-bottom: 1px solid var(--border);
+  }
+  .service-card ul li:last-child,
+  .service-card ul li:nth-last-child(2):nth-child(odd) {
+    border-bottom: none;
+  }
+  .service-card ul li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--teal-bg);
+    border: 2px solid var(--teal);
+  }
+
+  /* Info box variant for injected content */
+  .info-box {
+    background: var(--teal-bg);
+    border-left: 3px solid var(--teal);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 14px 20px;
+    margin-top: 8px;
+  }
+  .info-box .info-title {
+    font-size: 10pt;
+    font-weight: 600;
+    color: var(--teal-dark);
+    margin-bottom: 6px;
+  }
+  .info-box ul {
+    list-style: none;
+    padding: 0;
+  }
+  .info-box ul li {
+    font-size: 9.5pt;
+    color: #333;
+    font-weight: 300;
+    padding: 2px 0 2px 16px;
+    position: relative;
+  }
+  .info-box ul li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 9px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--teal);
+  }
+
+  /* ── PRICING TABLE ──────────────────────────────────── */
+  .price-note {
+    font-size: 9pt;
+    color: var(--gray-light);
+    font-weight: 300;
+    margin-bottom: 14px;
+    font-style: italic;
+  }
+
+  .price-table-wrapper {
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  }
+
+  .price-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9.5pt;
+  }
+  .price-table thead tr {
+    background: linear-gradient(135deg, var(--teal-dark), var(--teal));
+  }
+  .price-table thead th {
+    padding: 12px 18px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--white);
+    letter-spacing: 0.3px;
+    font-size: 9pt;
+    text-transform: uppercase;
+  }
+  .price-table thead th:nth-child(2),
+  .price-table thead th:nth-child(3) {
+    text-align: right;
+  }
+  .price-table tbody tr {
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .price-table tbody tr:nth-child(even) {
+    background: #fafbfc;
+  }
+  .price-table tbody td {
+    padding: 11px 18px;
+    color: #444;
+    font-weight: 300;
+  }
+  .price-table tbody td:nth-child(2),
+  .price-table tbody td:nth-child(3) {
+    text-align: right;
+    font-weight: 400;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .price-table tbody td:nth-child(4) {
+    font-size: 8.5pt;
+    color: var(--gray-light);
+    font-style: italic;
+  }
+
+  .price-table .total-row {
+    background: var(--pitch) !important;
+    border-bottom: none;
+    border-left: 4px solid var(--accent);
+  }
+  .price-table .total-row td {
+    color: var(--white);
+    font-weight: 700;
+    padding: 13px 18px;
+    font-size: 10pt;
+    border: none;
+  }
+  .price-table .total-row td:nth-child(1) {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+
+  /* ── PROCESS / TIMELINE ─────────────────────────────── */
+  .process-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .process-step {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 20px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: border-color 0.2s ease;
+    page-break-inside: avoid;
+  }
+  .process-step:hover {
+    border-color: var(--teal-light);
+  }
+
+  .step-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--pitch);
+    border: 2px solid var(--accent);
+    color: var(--accent);
+    font-size: 16pt;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(255, 10, 96, 0.18);
+  }
+
+  .step-content {
+    flex: 1;
+  }
+  .step-label {
+    font-size: 7.5pt;
+    font-weight: 600;
+    color: var(--teal);
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    margin-bottom: 2px;
+  }
+  .step-title {
+    font-size: 10.5pt;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 4px;
+  }
+  .step-desc {
+    font-size: 9pt;
+    color: var(--gray);
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  /* ── CTA BOX ────────────────────────────────────────── */
+  .cta-box {
+    margin-top: 8px;
+    background: linear-gradient(135deg, var(--pitch) 0%, #1a1f20 50%, #0B0F10 100%);
+    border-radius: var(--radius);
+    border-left: 4px solid var(--accent);
+    padding: 28px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-box::before {
+    content: '';
+    position: absolute;
+    top: -30px;
+    right: -20px;
+    width: 120px;
+    height: 120px;
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 50%;
+  }
+  .cta-box::after {
+    content: '';
+    position: absolute;
+    bottom: -40px;
+    right: 60px;
+    width: 80px;
+    height: 80px;
+    border: 2px solid rgba(255,255,255,0.06);
+    border-radius: 50%;
+  }
+
+  .cta-inner {
+    position: relative;
+    z-index: 2;
+  }
+  .cta-heading {
+    font-size: 14pt;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 6px;
+  }
+  .cta-text {
+    font-size: 10pt;
+    font-weight: 300;
+    line-height: 1.65;
+    color: rgba(255,255,255,0.88);
+    margin-bottom: 12px;
+    max-width: 520px;
+  }
+  .cta-contact {
+    font-weight: 600;
+    font-size: 10.5pt;
+    color: var(--white);
+    letter-spacing: 0.3px;
+  }
+  .cta-contact a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255,10,96,0.4);
+    padding-bottom: 1px;
+  }
+
+  /* ── SIGNATURE ──────────────────────────────────────── */
+  .signature-section {
+    margin-top: 36px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    page-break-inside: avoid;
+  }
+
+  .signature-left {
+    font-size: 9.5pt;
+    line-height: 1.9;
+  }
+  .signature-name {
+    font-size: 11pt;
+    font-weight: 700;
+    color: var(--dark);
+  }
+  .signature-role {
+    color: var(--teal);
+    font-weight: 400;
+  }
+  .signature-email {
+    color: var(--gray);
+    font-weight: 300;
+  }
+  .signature-email a {
+    color: var(--gray);
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .signature-right {
+    text-align: right;
+    font-size: 9pt;
+    color: var(--gray-light);
+    font-weight: 300;
+    line-height: 1.6;
+  }
+  .signature-right .sig-logo {
+    font-size: 14pt;
+    font-weight: 700;
+    color: var(--teal);
+    letter-spacing: 1.5px;
+    margin-bottom: 2px;
+  }
+
+  /* ── COMPANY PRESENTATION ──────────────────────────── */
+  .company-section {
+    padding: 44px 52px 32px;
+    page-break-before: always;
+  }
+
+  .company-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .stat-box {
+    background: var(--pitch);
+    border-radius: var(--radius);
+    padding: 26px 14px;
+    text-align: center;
+    border-bottom: 3px solid var(--accent);
+  }
+  .stat-number {
+    font-size: 22pt;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .stat-label {
+    font-size: 8pt;
+    font-weight: 300;
+    color: rgba(255,255,255,0.65);
+    letter-spacing: 0.3px;
+    line-height: 1.4;
+  }
+
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+
+  .pillar {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--teal);
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    padding: 22px 20px;
+    page-break-inside: avoid;
+  }
+  .pillar-title {
+    font-size: 10pt;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 14px;
+  }
+  .pillar ul {
+    list-style: none;
+    padding: 0;
+  }
+  .pillar ul li {
+    font-size: 9pt;
+    color: #555;
+    font-weight: 300;
+    padding: 8px 0 8px 16px;
+    position: relative;
+    line-height: 1.5;
+  }
+  .pillar ul li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--teal);
+  }
+
+  /* ── CONDITIONS BLOCK ──────────────────────────────── */
+  .conditions-block {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .conditions-box {
+    flex: 1;
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--teal);
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    padding: 14px 16px;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  .conditions-box.conditions-excl { border-top-color: var(--accent); }
+  .conditions-box.conditions-pay  { border-top-color: var(--teal-dark); }
+  .cond-title {
+    font-size: 8.5pt;
+    font-weight: 700;
+    color: var(--dark);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .cond-text {
+    font-size: 9pt;
+    color: #555;
+    font-weight: 300;
+    line-height: 1.65;
+  }
+
+  /* ── REFERENCES ─────────────────────────────────────── */
+  .ref-section {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  .ref-title {
+    font-size: 9pt;
+    font-weight: 700;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .ref-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .ref-tag {
+    background: #f5f7f8;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 5px 14px;
+    font-size: 8.5pt;
+    color: var(--dark);
+    font-weight: 400;
+  }
+
+  /* ── CERTIFICATIONS STRIP ───────────────────────────── */
+  .certs-strip {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    margin-top: 28px;
+    padding: 20px 16px;
+    background: var(--teal-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    gap: 12px;
+  }
+  .cert-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 9pt;
+    color: var(--dark);
+    font-weight: 400;
+  }
+  .cert-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--teal);
+    color: var(--white);
+    font-size: 11pt;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .cert-label {
+    line-height: 1.35;
+  }
+  .cert-label strong {
+    display: block;
+    font-weight: 600;
+    font-size: 9pt;
+    color: var(--dark);
+  }
+  .cert-label span {
+    font-size: 8pt;
+    color: var(--gray);
+    font-weight: 300;
+  }
+
+  /* ── FOOTER ─────────────────────────────────────────── */
+  .footer {
+    margin-top: 32px;
+    padding: 14px 52px;
+    background: #0B0F10;
+    font-size: 7.5pt;
+    color: rgba(255,255,255,0.5);
+    font-weight: 300;
+    text-align: center;
+    line-height: 2;
+    letter-spacing: 0.2px;
+  }
+  .footer a {
+    color: var(--teal);
+    text-decoration: none;
+  }
+  .footer .footer-sep {
+    margin: 0 8px;
+    opacity: 0.35;
+  }
+  .footer .footer-name {
+    font-size: 8.5pt;
+    font-weight: 600;
+    color: rgba(255,255,255,0.75);
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  /* ── PRINT STYLES ───────────────────────────────────── */
+  @media print {
+    body {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .header, .cta-box, .price-table thead tr,
+    .price-table .total-row, .step-circle,
+    .section-number, .footer, .service-badge {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .service-card:hover,
+    .process-step:hover {
+      box-shadow: none;
+      border-color: var(--border);
+    }
+    .content {
+      padding-top: 28px;
+      padding-bottom: 0;
+    }
+    /* Reduce spacing on page 2 to fit A4 */
+    .section {
+      margin-bottom: 20px;
+    }
+    .process-step {
+      padding: 14px 16px;
+    }
+    .step-circle {
+      width: 38px;
+      height: 38px;
+      font-size: 14pt;
+    }
+    .cta-box {
+      padding: 20px 28px;
+    }
+    .signature-section {
+      margin-top: 20px;
+      padding-top: 16px;
+    }
+    .footer {
+      margin-top: 0;
+      padding: 12px 52px;
+    }
+    .company-section {
+      padding: 36px 52px 28px;
+    }
+    .stats-row {
+      margin-bottom: 24px;
+    }
+    .stat-box {
+      padding: 22px 12px;
+    }
+    .stat-number {
+      font-size: 18pt;
+    }
+    .pillar {
+      padding: 20px 18px;
+    }
+    .pillar ul li {
+      padding: 7px 0 7px 16px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     HEADER — Full-width teal gradient with geometric accents
+     ============================================================ -->
+<div class="header">
+  <div class="header-deco header-deco-1"></div>
+  <div class="header-deco header-deco-2"></div>
+  <div class="header-deco header-deco-3"></div>
+
+  <div class="header-inner">
+    <div class="logo-block">
+      <span class="logo-text">acenta</span>
+      <div class="logo-divider"></div>
+      <span class="logo-tagline">Učinkovite<br>rešitve</span>
+    </div>
+    <span class="service-badge">{{STORITEV_BADGE}}</span>
+  </div>
+</div>
+
+<!-- ============================================================
+     TITLE BLOCK — Split layout: title left, meta right
+     ============================================================ -->
+<div class="title-block">
+  <div class="meta-table">
+    <span class="meta-label">Datum:</span> <strong>{{DATUM}}</strong><br>
+    <span class="meta-label">Ponudba:</span> <strong>{{STEVILKA_PONUDBE}}</strong><br>
+    <span class="meta-label">Stranka:</span> <strong>{{IME_STRANKE}}</strong>{{STRANKA_DETAILS}}<br>
+    {{DODATNI_META}}
+  </div>
+  <h1 class="proposal-title">{{NASLOV}}</h1>
+  <div class="proposal-subtitle">{{PODNASLOV}}</div>
+</div>
+<hr class="title-divider">
+
+<!-- ============================================================
+     CONTENT — All proposal sections
+     ============================================================ -->
+<div class="content">
+
+  <!-- SECTION 1 — Zakaj ta storitev? -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">1</div>
+      <h2 class="section-title">ZAKAJ <span class="accent">TA STORITEV?</span></h2>
+    </div>
+    <p class="section-text">{{UVODNI_ODSTAVEK}}</p>
+  </div>
+
+  <!-- SECTION 2 — Kaj vključuje ponudba? -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">2</div>
+      <h2 class="section-title">KAJ VKLJUČUJE <span class="accent">PONUDBA?</span></h2>
+    </div>
+    <div class="services-grid">
+      {{KARTICE_STORITEV}}
+    </div>
+  </div>
+
+  <!-- Separator pred prelomom strani -->
+  <div style="margin: 12px 0 0; height: 2px; background: linear-gradient(90deg, #00AFAA, transparent);"></div>
+
+  <div style="page-break-before: always; padding-top: 44px;">
+
+  <!-- SECTION 3 — Cenovna struktura -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">3</div>
+      <h2 class="section-title">CENOVNA <span class="accent">STRUKTURA</span></h2>
+    </div>
+    <p class="price-note">Vse cene so v EUR, brez DDV (22 %). {{OPOMBA_CENE}}</p>
+    <div class="price-table-wrapper">
+      <table class="price-table">
+        <thead>
+          <tr>
+            <th>Storitev</th>
+            <th>Vzpostavitev (1x)</th>
+            <th>Mesečno</th>
+            <th>Opomba</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{VRSTICE_CEN}}
+          <tr class="total-row">
+            <td>SKUPAJ</td>
+            <td>{{SKUPAJ_VZPOSTAVITEV}}</td>
+            <td>{{SKUPAJ_MESECNO}}</td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {{POGOJI_HTML}}
+
+  <!-- SECTION 4 — Kako poteka sodelovanje? -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">4</div>
+      <h2 class="section-title">KAKO POTEKA <span class="accent">SODELOVANJE?</span></h2>
+    </div>
+    <div class="process-grid">
+
+      <div class="process-step">
+        <div class="step-circle">1</div>
+        <div class="step-content">
+          <div class="step-label">Korak 1</div>
+          <div class="step-title">{{NASLOV_KORAK_1}}</div>
+          <div class="step-desc">{{KORAK_1}}</div>
+        </div>
+      </div>
+
+      <div class="process-step">
+        <div class="step-circle">2</div>
+        <div class="step-content">
+          <div class="step-label">Korak 2</div>
+          <div class="step-title">{{NASLOV_KORAK_2}}</div>
+          <div class="step-desc">{{KORAK_2}}</div>
+        </div>
+      </div>
+
+      <div class="process-step">
+        <div class="step-circle">3</div>
+        <div class="step-content">
+          <div class="step-label">Korak 3</div>
+          <div class="step-title">{{NASLOV_KORAK_3}}</div>
+          <div class="step-desc">{{KORAK_3}}</div>
+        </div>
+      </div>
+
+      <div class="process-step">
+        <div class="step-circle">4</div>
+        <div class="step-content">
+          <div class="step-label">Korak 4</div>
+          <div class="step-title">{{NASLOV_KORAK_4}}</div>
+          <div class="step-desc">{{KORAK_4}}</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- CTA BOX -->
+  <div class="cta-box">
+    <div class="cta-inner">
+      <div class="cta-heading">Začnimo sodelovanje</div>
+      <p class="cta-text">
+        Pripravljeni na naslednji korak? Kontaktirajte nas za brezplačno predstavitev
+        in odgovorili vam bomo na vsa vprašanja. Veselimo se sodelovanja z vami.
+      </p>
+      <div class="cta-contact">
+        <a href="mailto:info@acenta.si">info@acenta.si</a>
+        &nbsp;&middot;&nbsp;
+        <a href="https://www.acenta.si">www.acenta.si</a>
+        &nbsp;&middot;&nbsp;
+        +386 (0) 4 530 28 28
+      </div>
+    </div>
+  </div>
+
+  <!-- SIGNATURE -->
+  <div class="signature-section">
+    <div class="signature-left">
+      <div class="signature-name">{{IME_KOMERCIALISTA}}</div>
+      <div class="signature-role">{{NAZIV_KOMERCIALISTA}}</div>
+      <div class="signature-email"><a href="mailto:{{EMAIL_KOMERCIALISTA}}">{{EMAIL_KOMERCIALISTA}}</a></div>
+    </div>
+    <div class="signature-right">
+      <div class="sig-logo">acenta</div>
+      Radovljica, {{DATUM}}
+    </div>
+  </div>
+
+  </div><!-- /page-break wrapper -->
+
+</div><!-- /.content -->
+
+<!-- ============================================================
+     COMPANY PRESENTATION — Static, appears on all ponudbe
+     ============================================================ -->
+<div class="company-section">
+
+  <div class="company-header">
+    <div class="section-number">5</div>
+    <h2 class="section-title">O PODJETJU <span class="accent">ACENTA</span></h2>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-number">25</div>
+      <div class="stat-label">let izkušenj</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-number">3600+</div>
+      <div class="stat-label">zadovoljnih podjetij</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-number">125+</div>
+      <div class="stat-label">let skupnih izkušenj ekipe</div>
+    </div>
+  </div>
+
+  <div class="pillars-grid">
+
+    <div class="pillar">
+      <div class="pillar-title">Merljivi rezultati</div>
+      <ul>
+        <li>Analitičen pristop z jasno definiranimi KPI-ji</li>
+        <li>SWOT analiza in definicija ciljnih skupin</li>
+        <li>Strategija prilagojena vašim poslovnim ciljem</li>
+        <li>Odgovornost za vsak korak izvedbe</li>
+      </ul>
+    </div>
+
+    <div class="pillar">
+      <div class="pillar-title">Zaupanje naročnikov</div>
+      <ul>
+        <li>Več kot polovica naročnikov z nami &gt; 10 let</li>
+        <li>Uradni Google Partner</li>
+        <li>Izobraževanje vaših zaposlenih</li>
+        <li>Pogodbeni partner Botrstva Slovenije</li>
+      </ul>
+    </div>
+
+    <div class="pillar">
+      <div class="pillar-title">Hitra podpora</div>
+      <ul>
+        <li>Odziv na povpraševanja v 1 delovnem dnevu</li>
+        <li>Tehnična pomoč v 8 urah</li>
+        <li>Redni skupni sestanki z jasnim poročanjem</li>
+        <li>Prilagoditve strategije glede na rezultate</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- CERTIFICATIONS STRIP -->
+  <div class="certs-strip">
+    <div class="cert-item">
+      <div class="cert-check">✓</div>
+      <div class="cert-label">
+        <strong>Google Partner</strong>
+        <span>Uradno certificirana agencija</span>
+      </div>
+    </div>
+    <div class="cert-item">
+      <div class="cert-check">✓</div>
+      <div class="cert-label">
+        <strong>Botrstvo Slovenije</strong>
+        <span>Pogodbeni partner</span>
+      </div>
+    </div>
+    <div class="cert-item">
+      <div class="cert-check">✓</div>
+      <div class="cert-label">
+        <strong>25 let izkušenj</strong>
+        <span>Na trgu od leta 2000</span>
+      </div>
+    </div>
+    <div class="cert-item">
+      <div class="cert-check">✓</div>
+      <div class="cert-label">
+        <strong>3600+ strank</strong>
+        <span>Po vsej Sloveniji</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- REFERENCES -->
+  <div class="ref-section">
+    <div class="ref-title">Nekatere naše reference</div>
+    <div class="ref-grid">
+      <span class="ref-tag">Hotel Astoria Bled</span>
+      <span class="ref-tag">Royal Bled Golf</span>
+      <span class="ref-tag">JGZ Brdo</span>
+      <span class="ref-tag">Life Class Hotels &amp; Spa</span>
+      <span class="ref-tag">Kozjanski park</span>
+      <span class="ref-tag">Greva</span>
+      <span class="ref-tag">ABC Rentacar</span>
+      <span class="ref-tag">Liberty Adriatic</span>
+      <span class="ref-tag">Dostavasadik</span>
+      <span class="ref-tag">Grad Podsreda</span>
+      <span class="ref-tag">Sportmix</span>
+      <span class="ref-tag">Elpro</span>
+      <span class="ref-tag">Višja strokovna šola Bled</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============================================================
+     FOOTER — Company details on dark background
+     ============================================================ -->
+<div class="footer">
+  <span class="footer-name">ACENTA d.o.o.</span>
+  Kranjska cesta 4, 4240 Radovljica
+  <span class="footer-sep">|</span>
+  T: +386 (0) 4 530 28 28
+  <span class="footer-sep">|</span>
+  <a href="mailto:info@acenta.si">info@acenta.si</a>
+  <span class="footer-sep">|</span>
+  <a href="https://www.acenta.si">www.acenta.si</a>
+  <br>
+  ID za DDV: SI97997404
+  <span class="footer-sep">|</span>
+  TRR: SI56 0700 0000 4418 828
+  <span class="footer-sep">|</span>
+  Gorenjska banka d.d.
+</div>
+
+</body>
+</html>

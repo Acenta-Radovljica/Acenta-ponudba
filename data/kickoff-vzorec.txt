@@ -1,0 +1,32 @@
+KICKOFF SESTANEK — VZOREC
+=========================
+Kopiraj ta file v kickoff.txt in izpolni podatke.
+
+STRANKA:
+Ime podjetja: [npr. Cedom d.o.o.]
+Kontaktna oseba: [ime in priimek]
+Panoga: [npr. nepremičnine, turizem, gradbništvo...]
+Območje delovanja: [npr. Gorenjska, celotna Slovenija...]
+Spletna stran: [url ali "nima"]
+
+KAJ PRODAJAJO / PONUJAJO:
+[Kratek opis produktov ali storitev stranke]
+
+CILJI OGLAŠEVANJA:
+[Kaj stranka želi doseči? Npr. več povpraševanj, prodaja konkretnega produkta, brand awareness...]
+
+CILJNE STRANKE:
+[Kdo so njihove stranke? Starost, demografija, interesi...]
+
+BUDŽET ZA OGLAŠEVANJE (mesečno):
+[Koliko so pripravljeni vložiti v oglase pri Googlu/Meta?]
+
+STORITVE KI JIH ŽELIJO:
+[Obkroži kar se je dogovorilo: Google Ads / Meta Ads / SEO / Spletna stran / Pristajalna stran]
+
+POSEBNOSTI / OPOMBE:
+[Karkoli posebnega, kar je bilo omenjeno na sestanku]
+
+KOMERCIALIST:
+Ime: [npr. Matjaž Kristan]
+Email: [npr. info@acenta.si]

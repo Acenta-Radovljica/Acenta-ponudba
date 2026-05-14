@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ponudba Generator — Acenta</title>
+<style>
+  :root {
+    --dark: #0B0F10;
+    --teal: #00AFAA;
+    --accent: #FF0A60;
+    --gray: #6b7280;
+    --border: #e0e5e8;
+    --bg: #f7f9fa;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--dark); }
+
+  /* HEADER */
+  .header {
+    background: var(--dark);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .header-logo { font-size: 22px; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
+  .header-sep { width: 1px; height: 24px; background: #333; }
+  .header-sub { font-size: 11px; color: #888; letter-spacing: 1px; text-transform: uppercase; }
+
+  /* MAIN */
+  .main { max-width: 860px; margin: 32px auto; padding: 0 16px 64px; }
+
+  /* KORAKI */
+  .steps { display: flex; gap: 0; margin-bottom: 32px; }
+  .step { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--gray); }
+  .step.active { color: var(--dark); font-weight: 600; }
+  .step.done { color: var(--teal); }
+  .step-num {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+  }
+  .step.active .step-num { border-color: var(--teal); color: var(--teal); }
+  .step.done .step-num { border-color: var(--teal); background: var(--teal); color: #fff; }
+  .step-arrow { color: var(--border); margin: 0 12px; }
+
+  /* CARD */
+  .card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 28px 32px; margin-bottom: 20px; }
+  .card-title { font-size: 15px; font-weight: 700; margin-bottom: 20px; color: var(--dark); }
+  .card-title span { color: var(--teal); }
+
+  /* TABS */
+  .tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+  .tab {
+    padding: 8px 20px; border-radius: 6px; border: 2px solid var(--border);
+    background: none; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--gray);
+    transition: all 0.15s;
+  }
+  .tab.active { border-color: var(--teal); color: var(--teal); background: #f0fefe; }
+
+  /* UPLOAD */
+  .upload-area {
+    border: 2px dashed var(--border); border-radius: 8px;
+    padding: 48px 24px; text-align: center; cursor: pointer;
+    transition: border-color 0.15s; color: var(--gray);
+  }
+  .upload-area:hover, .upload-area.drag { border-color: var(--teal); color: var(--teal); }
+  .upload-area.has-file { border-color: var(--teal); background: #f0fefe; }
+  .upload-icon { font-size: 36px; margin-bottom: 8px; }
+  .upload-filename { font-weight: 600; color: var(--teal); margin-top: 8px; font-size: 13px; }
+  #file-input { display: none; }
+
+  /* TEXTAREA */
+  textarea {
+    width: 100%; padding: 12px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 13px; font-family: inherit;
+    resize: vertical; min-height: 180px; line-height: 1.6;
+    outline: none; transition: border-color 0.15s;
+  }
+  textarea:focus { border-color: var(--teal); }
+
+  /* FORM */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-grid.full { grid-template-columns: 1fr; }
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 11px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; }
+  .field input, .field textarea, .field select {
+    padding: 9px 12px; border: 1px solid var(--border);
+    border-radius: 6px; font-size: 13px; font-family: inherit;
+    outline: none; transition: border-color 0.15s;
+  }
+  .field input:focus, .field textarea:focus { border-color: var(--teal); }
+  .field textarea { min-height: 90px; resize: vertical; }
+
+  /* STORITVE */
+  .storitev-card {
+    border: 1px solid var(--border); border-left: 4px solid var(--teal);
+    border-radius: 8px; padding: 16px; margin-bottom: 12px; background: #fafcfc;
+  }
+  .storitev-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .storitev-label { font-size: 12px; font-weight: 700; color: var(--teal); text-transform: uppercase; }
+  .btn-remove { background: none; border: none; cursor: pointer; color: var(--accent); font-size: 18px; line-height: 1; }
+  .storitev-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 28px; border-radius: 8px; font-size: 14px;
+    font-weight: 700; cursor: pointer; border: none;
+    transition: all 0.15s; text-decoration: none;
+  }
+  .btn-primary { background: var(--teal); color: #fff; }
+  .btn-primary:hover { background: #008e89; }
+  .btn-primary:disabled { background: #b2d8d7; cursor: not-allowed; }
+  .btn-outline { background: none; border: 2px solid var(--border); color: var(--dark); }
+  .btn-outline:hover { border-color: var(--teal); color: var(--teal); }
+  .btn-success { background: #1a7a4a; color: #fff; }
+  .btn-success:hover { background: #155e39; }
+  .btn-add { background: none; border: 2px dashed var(--border); color: var(--gray); width: 100%; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; }
+  .btn-add:hover { border-color: var(--teal); color: var(--teal); }
+  .actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+
+  /* LOADING */
+  .spinner {
+    width: 44px; height: 44px; border: 4px solid var(--border);
+    border-top-color: var(--teal); border-radius: 50%;
+    animation: spin 0.8s linear infinite; margin: 0 auto 16px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-box { text-align: center; padding: 48px 0; }
+  .loading-text { color: var(--gray); font-size: 14px; }
+
+  /* DOWNLOAD */
+  .download-box {
+    display: flex; align-items: center; gap: 16px;
+    background: #f0fefe; border: 1px solid var(--teal);
+    border-radius: 8px; padding: 16px 20px; margin-bottom: 16px;
+  }
+  .download-icon { font-size: 28px; }
+  .download-info { flex: 1; }
+  .download-label { font-size: 11px; color: var(--gray); text-transform: uppercase; font-weight: 700; }
+  .download-name { font-size: 13px; font-weight: 600; color: var(--dark); margin-top: 2px; }
+
+  /* SEKCIJA */
+  .sekcija-naslov {
+    font-size: 11px; font-weight: 700; color: var(--teal);
+    text-transform: uppercase; letter-spacing: 1px;
+    margin: 24px 0 12px; padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* COLLAPSE */
+  .collapse-toggle {
+    background: none; border: none; cursor: pointer;
+    font-size: 11px; font-weight: 700; color: var(--gray);
+    text-transform: uppercase; letter-spacing: 1px;
+    display: flex; align-items: center; gap: 6px;
+    padding: 6px 0; margin: 16px 0 0;
+  }
+  .collapse-toggle:hover { color: var(--teal); }
+
+  /* NAPAKA */
+  .napaka { background: #fff0f4; border: 1px solid var(--accent); border-radius: 8px; padding: 14px 18px; color: var(--accent); font-size: 13px; margin-top: 12px; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-logo">acenta</div>
+  <div class="header-sep"></div>
+  <div class="header-sub">Generator ponudb</div>
+</div>
+
+<div class="main">
+
+  <!-- KORAKI -->
+  <div class="steps">
+    <div class="step active" id="step-ind-1">
+      <div class="step-num">1</div> Vnos
+    </div>
+    <div class="step-arrow">›</div>
+    <div class="step" id="step-ind-2">
+      <div class="step-num">2</div> Pregled
+    </div>
+    <div class="step-arrow">›</div>
+    <div class="step" id="step-ind-3">
+      <div class="step-num">3</div> Dokument
+    </div>
+  </div>
+
+  <!-- KORAK 1: VNOS -->
+  <div id="step-vnos">
+    <div class="card">
+      <div class="card-title">Vnos podatkov <span>—</span> PDF ali besedilo</div>
+
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('pdf')">PDF upload</button>
+        <button class="tab" onclick="switchTab('text')">Prilepi besedilo</button>
+      </div>
+
+      <div id="tab-pdf">
+        <div class="upload-area" id="upload-area" onclick="document.getElementById('file-input').click()"
+          ondragover="event.preventDefault();this.classList.add('drag')"
+          ondragleave="this.classList.remove('drag')"
+          ondrop="handleDrop(event)">
+          <div class="upload-icon">📄</div>
+          <div>Klikni ali povleci PDF sem</div>
+          <div id="upload-filename" class="upload-filename hidden"></div>
+        </div>
+        <input type="file" id="file-input" accept=".pdf" onchange="handleFile(this.files[0])">
+      </div>
+
+      <div id="tab-text" class="hidden">
+        <textarea id="besedilo" placeholder="Prilepi transkript kickoff sestanka ali besedilo obstoječe ponudbe..."></textarea>
+      </div>
+
+      <div id="vnos-napaka" class="napaka hidden"></div>
+
+      <div class="actions" style="margin-top:20px;">
+        <button class="btn btn-primary" onclick="razcleni()" id="btn-razcleni">
+          Razčleni →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div id="step-loading" class="hidden">
+    <div class="card">
+      <div class="loading-box">
+        <div class="spinner"></div>
+        <div class="loading-text">Claude analizira dokument...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KORAK 2: FORMA -->
+  <div id="step-forma" class="hidden">
+    <div class="card">
+      <div class="card-title">Pregled in urejanje</div>
+
+      <!-- STRANKA -->
+      <div class="sekcija-naslov">Stranka</div>
+      <div class="form-grid">
+        <div class="field" style="grid-column:span 2">
+          <label>Ime podjetja</label>
+          <input type="text" id="f-IME_STRANKE">
+        </div>
+        <div class="field">
+          <label>Naslov</label>
+          <input type="text" id="f-NASLOV_STRANKE">
+        </div>
+        <div class="field">
+          <label>Kontaktna oseba</label>
+          <input type="text" id="f-KONTAKTNA_OSEBA">
+        </div>
+        <div class="field">
+          <label>Telefon</label>
+          <input type="text" id="f-TELEFON_STRANKE">
+        </div>
+        <div class="field">
+          <label>Opis stranke (meta)</label>
+          <input type="text" id="f-DODATNI_META">
+        </div>
+      </div>
+
+      <!-- PONUDBA -->
+      <div class="sekcija-naslov">Ponudba</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Datum</label>
+          <input type="text" id="f-DATUM">
+        </div>
+        <div class="field">
+          <label>Številka ponudbe</label>
+          <input type="text" id="f-STEVILKA_PONUDBE">
+        </div>
+        <div class="field">
+          <label>Veljavnost</label>
+          <input type="text" id="f-VELJAVNOST_PONUDBE">
+        </div>
+        <div class="field">
+          <label>Badge (oznaka)</label>
+          <input type="text" id="f-STORITEV_BADGE">
+        </div>
+      </div>
+
+      <!-- VSEBINA -->
+      <div class="sekcija-naslov">Vsebina</div>
+      <div class="form-grid full">
+        <div class="field">
+          <label>Naslov ponudbe</label>
+          <input type="text" id="f-NASLOV">
+        </div>
+        <div class="field">
+          <label>Podnaslov</label>
+          <input type="text" id="f-PODNASLOV">
+        </div>
+        <div class="field">
+          <label>Uvodni odstavek</label>
+          <textarea id="f-UVODNI_ODSTAVEK" style="min-height:110px;"></textarea>
+        </div>
+      </div>
+
+      <!-- STORITVE -->
+      <div class="sekcija-naslov">Storitve</div>
+      <div id="storitve-container"></div>
+      <button class="btn-add" onclick="dodajStoritev()">+ Dodaj storitev</button>
+
+      <!-- POGOJI (collapse) -->
+      <button class="collapse-toggle" onclick="toggleCollapse('pogoji')">
+        <span id="arrow-pogoji">▶</span> Pogoji in komercialist
+      </button>
+      <div id="pogoji" class="hidden">
+        <div class="sekcija-naslov" style="margin-top:16px;">Pogoji</div>
+        <div class="form-grid full">
+          <div class="field">
+            <label>Predpostavke</label>
+            <textarea id="f-PREDPOSTAVKE"></textarea>
+          </div>
+          <div class="field">
+            <label>Izključitve (ni vključeno)</label>
+            <textarea id="f-IZKLUCITVE"></textarea>
+          </div>
+          <div class="field">
+            <label>Plačilni pogoji</label>
+            <textarea id="f-PLACILNI_POGOJI" style="min-height:60px;"></textarea>
+          </div>
+        </div>
+
+        <div class="sekcija-naslov">Komercialist</div>
+        <div class="form-grid">
+          <div class="field">
+            <label>Ime</label>
+            <input type="text" id="f-IME_KOMERCIALISTA">
+          </div>
+          <div class="field">
+            <label>Naziv</label>
+            <input type="text" id="f-NAZIV_KOMERCIALISTA">
+          </div>
+          <div class="field" style="grid-column:span 2">
+            <label>Email</label>
+            <input type="text" id="f-EMAIL_KOMERCIALISTA">
+          </div>
+        </div>
+
+        <div class="sekcija-naslov">Koraki</div>
+        <div class="form-grid">
+          <div class="field">
+            <label>Naslov koraka 1</label>
+            <input type="text" id="f-NASLOV_KORAK_1">
+          </div>
+          <div class="field">
+            <label>Opis koraka 1</label>
+            <textarea id="f-KORAK_1" style="min-height:70px;"></textarea>
+          </div>
+          <div class="field">
+            <label>Naslov koraka 2</label>
+            <input type="text" id="f-NASLOV_KORAK_2">
+          </div>
+          <div class="field">
+            <label>Opis koraka 2</label>
+            <textarea id="f-KORAK_2" style="min-height:70px;"></textarea>
+          </div>
+          <div class="field">
+            <label>Naslov koraka 3</label>
+            <input type="text" id="f-NASLOV_KORAK_3">
+          </div>
+          <div class="field">
+            <label>Opis koraka 3</label>
+            <textarea id="f-KORAK_3" style="min-height:70px;"></textarea>
+          </div>
+          <div class="field">
+            <label>Naslov koraka 4</label>
+            <input type="text" id="f-NASLOV_KORAK_4">
+          </div>
+          <div class="field">
+            <label>Opis koraka 4</label>
+            <textarea id="f-KORAK_4" style="min-height:70px;"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div id="forma-napaka" class="napaka hidden" style="margin-top:16px;"></div>
+
+      <div class="actions" style="margin-top:28px;">
+        <button class="btn btn-primary" onclick="generiraiWord()" id="btn-word">
+          ⬇ Generiraj Word
+        </button>
+        <button class="btn btn-outline" onclick="nazajNaVnos()">← Nazaj</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- KORAK 3: DOKUMENT -->
+  <div id="step-dokument" class="hidden">
+    <div class="card">
+      <div class="card-title">Dokument</div>
+
+      <div id="word-box" class="download-box hidden">
+        <div class="download-icon">📝</div>
+        <div class="download-info">
+          <div class="download-label">Word osnutek</div>
+          <div class="download-name" id="word-filename"></div>
+        </div>
+        <a id="word-link" href="#" class="btn btn-outline" download>Prenesi</a>
+      </div>
+
+      <div id="pdf-box" class="download-box hidden" style="border-color:#1a7a4a;background:#f0fdf4;">
+        <div class="download-icon">📕</div>
+        <div class="download-info">
+          <div class="download-label">PDF</div>
+          <div class="download-name" id="pdf-filename"></div>
+        </div>
+        <a id="pdf-link" href="#" class="btn btn-success" download>Prenesi</a>
+      </div>
+
+      <div id="dokument-napaka" class="napaka hidden"></div>
+      <div id="pdf-loading" class="hidden" style="text-align:center;padding:20px 0;">
+        <div class="spinner"></div>
+        <div class="loading-text">Generiram PDF...</div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="btn-pdf" onclick="generiraiPdf()">
+          ✓ Potrdi → Generiraj PDF
+        </button>
+        <button class="btn btn-outline" onclick="nazajNaFormo()">← Uredi</button>
+        <button class="btn btn-outline" onclick="resetiraj()">↺ Nova ponudba</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let aktivniTab = 'pdf';
+let pdfBase64 = null;
+let storitevIndex = 0;
+
+// ── TABS ──────────────────────────────────────────────────────────
+function switchTab(tab) {
+  aktivniTab = tab;
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', (i === 0 && tab === 'pdf') || (i === 1 && tab === 'text'));
+  });
+  document.getElementById('tab-pdf').classList.toggle('hidden', tab !== 'pdf');
+  document.getElementById('tab-text').classList.toggle('hidden', tab !== 'text');
+}
+
+// ── FILE HANDLING ─────────────────────────────────────────────────
+function handleFile(file) {
+  if (!file || file.type !== 'application/pdf') return;
+  const area = document.getElementById('upload-area');
+  area.classList.add('has-file');
+  area.classList.remove('drag');
+  document.getElementById('upload-filename').textContent = file.name;
+  document.getElementById('upload-filename').classList.remove('hidden');
+  const reader = new FileReader();
+  reader.onload = e => { pdfBase64 = e.target.result.split(',')[1]; };
+  reader.readAsDataURL(file);
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-area').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) handleFile(file);
+}
+
+// ── RAZČLENI ──────────────────────────────────────────────────────
+async function razcleni() {
+  const napaka = document.getElementById('vnos-napaka');
+  napaka.classList.add('hidden');
+
+  const body = {};
+  if (aktivniTab === 'pdf') {
+    if (!pdfBase64) { prikaziNapako(napaka, 'Najprej naloži PDF datoteko.'); return; }
+    body.pdf = pdfBase64;
+  } else {
+    const t = document.getElementById('besedilo').value.trim();
+    if (!t) { prikaziNapako(napaka, 'Najprej prilepi besedilo.'); return; }
+    body.besedilo = t;
+  }
+
+  show('step-vnos', false);
+  show('step-loading', true);
+  setStepActive(2);
+
+  try {
+    const res = await post('/razcleni', body);
+    if (!res.ok) throw new Error(res.napaka);
+    zapolniFormo(res.podatki);
+    show('step-loading', false);
+    show('step-forma', true);
+  } catch (err) {
+    show('step-loading', false);
+    show('step-vnos', true);
+    setStepActive(1);
+    prikaziNapako(napaka, 'Napaka: ' + err.message);
+  }
+}
+
+// ── FORMA ─────────────────────────────────────────────────────────
+function zapolniFormo(p) {
+  const enostavna = [
+    'IME_STRANKE','NASLOV_STRANKE','KONTAKTNA_OSEBA','TELEFON_STRANKE','DODATNI_META',
+    'DATUM','STEVILKA_PONUDBE','VELJAVNOST_PONUDBE','STORITEV_BADGE',
+    'NASLOV','PODNASLOV','UVODNI_ODSTAVEK','OPOMBA_CENE',
+    'PREDPOSTAVKE','IZKLUCITVE','PLACILNI_POGOJI',
+    'IME_KOMERCIALISTA','NAZIV_KOMERCIALISTA','EMAIL_KOMERCIALISTA',
+    'NASLOV_KORAK_1','KORAK_1','NASLOV_KORAK_2','KORAK_2',
+    'NASLOV_KORAK_3','KORAK_3','NASLOV_KORAK_4','KORAK_4'
+  ];
+  enostavna.forEach(k => {
+    const el = document.getElementById('f-' + k);
+    if (el) el.value = p[k] || '';
+  });
+
+  // Storitve
+  const cont = document.getElementById('storitve-container');
+  cont.innerHTML = '';
+  storitevIndex = 0;
+  (p.storitve || []).forEach(s => dodajStoritevZPodatki(s));
+}
+
+function zberiForme() {
+  const p = {};
+  document.querySelectorAll('[id^="f-"]').forEach(el => {
+    p[el.id.replace('f-', '')] = el.value;
+  });
+
+  // Storitve
+  p.storitve = [];
+  document.querySelectorAll('.storitev-card').forEach(card => {
+    const idx = card.dataset.idx;
+    const tockeRaw = document.getElementById(`s-tocke-${idx}`).value;
+    p.storitve.push({
+      naziv: document.getElementById(`s-naziv-${idx}`).value,
+      podnaslov: document.getElementById(`s-podnaslov-${idx}`).value,
+      tocke: tockeRaw.split('\n').map(t => t.trim()).filter(Boolean),
+      vzpostavitev: document.getElementById(`s-vzp-${idx}`).value,
+      mesecno: document.getElementById(`s-mes-${idx}`).value,
+      opomba: document.getElementById(`s-opomba-${idx}`).value,
+    });
+  });
+  return p;
+}
+
+function dodajStoritevZPodatki(s = {}) {
+  const idx = storitevIndex++;
+  const tockeText = (s.tocke || []).join('\n');
+  const cont = document.getElementById('storitve-container');
+  const div = document.createElement('div');
+  div.className = 'storitev-card';
+  div.dataset.idx = idx;
+  div.innerHTML = `
+    <div class="storitev-header">
+      <div class="storitev-label">Storitev ${idx + 1}</div>
+      <button class="btn-remove" onclick="this.closest('.storitev-card').remove()" title="Odstrani">×</button>
+    </div>
+    <div class="form-grid full" style="gap:10px;">
+      <div class="field">
+        <label>Naziv storitve</label>
+        <input type="text" id="s-naziv-${idx}" value="${esc(s.naziv||'')}">
+      </div>
+      <div class="field">
+        <label>Šifra | opis</label>
+        <input type="text" id="s-podnaslov-${idx}" value="${esc(s.podnaslov||'')}">
+      </div>
+    </div>
+    <div class="storitev-grid" style="margin-top:10px;">
+      <div class="field">
+        <label>Vzpostavitev</label>
+        <input type="text" id="s-vzp-${idx}" value="${esc(s.vzpostavitev||'')}">
+      </div>
+      <div class="field">
+        <label>Mesečno</label>
+        <input type="text" id="s-mes-${idx}" value="${esc(s.mesecno||'')}">
+      </div>
+      <div class="field">
+        <label>Opomba</label>
+        <input type="text" id="s-opomba-${idx}" value="${esc(s.opomba||'')}">
+      </div>
+    </div>
+    <div class="field" style="margin-top:10px;">
+      <label>Točke (ena na vrstico)</label>
+      <textarea id="s-tocke-${idx}" style="min-height:80px;">${esc(tockeText)}</textarea>
+    </div>`;
+  cont.appendChild(div);
+}
+
+function dodajStoritev() { dodajStoritevZPodatki(); }
+
+// ── WORD ──────────────────────────────────────────────────────────
+async function generiraiWord() {
+  const napaka = document.getElementById('forma-napaka');
+  napaka.classList.add('hidden');
+  const btn = document.getElementById('btn-word');
+  btn.disabled = true;
+  btn.textContent = 'Generiram...';
+
+  try {
+    const podatki = zberiForme();
+    const res = await post('/generiraj-word', podatki);
+    if (!res.ok) throw new Error(res.napaka);
+
+    document.getElementById('word-filename').textContent = res.datoteka;
+    document.getElementById('word-link').href = '/prenesi/word/' + res.datoteka;
+
+    show('step-forma', false);
+    show('step-dokument', true);
+    document.getElementById('word-box').classList.remove('hidden');
+    setStepActive(3);
+  } catch (err) {
+    prikaziNapako(napaka, 'Napaka: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '⬇ Generiraj Word';
+  }
+}
+
+// ── PDF ───────────────────────────────────────────────────────────
+async function generiraiPdf() {
+  const napaka = document.getElementById('dokument-napaka');
+  napaka.classList.add('hidden');
+  const btn = document.getElementById('btn-pdf');
+  btn.classList.add('hidden');
+  document.getElementById('pdf-loading').classList.remove('hidden');
+
+  try {
+    const res = await post('/generiraj-pdf', {});
+    if (!res.ok) throw new Error(res.napaka);
+
+    document.getElementById('pdf-filename').textContent = res.datoteka;
+    document.getElementById('pdf-link').href = '/prenesi/pdf/' + res.datoteka;
+    document.getElementById('pdf-box').classList.remove('hidden');
+  } catch (err) {
+    prikaziNapako(napaka, 'Napaka: ' + err.message);
+    btn.classList.remove('hidden');
+  } finally {
+    document.getElementById('pdf-loading').classList.add('hidden');
+  }
+}
+
+// ── NAVIGACIJA ────────────────────────────────────────────────────
+function nazajNaVnos() {
+  show('step-forma', false);
+  show('step-vnos', true);
+  setStepActive(1);
+}
+
+function nazajNaFormo() {
+  show('step-dokument', false);
+  show('step-forma', true);
+  setStepActive(2);
+  document.getElementById('btn-pdf').classList.remove('hidden');
+  document.getElementById('pdf-box').classList.add('hidden');
+}
+
+function resetiraj() {
+  location.reload();
+}
+
+function toggleCollapse(id) {
+  const el = document.getElementById(id);
+  const arrow = document.getElementById('arrow-' + id);
+  const hidden = el.classList.toggle('hidden');
+  arrow.textContent = hidden ? '▶' : '▼';
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────
+function show(id, vidno) {
+  document.getElementById(id).classList.toggle('hidden', !vidno);
+}
+
+function setStepActive(n) {
+  [1,2,3].forEach(i => {
+    const el = document.getElementById('step-ind-' + i);
+    el.classList.toggle('active', i === n);
+    el.classList.toggle('done', i < n);
+  });
+}
+
+function prikaziNapako(el, msg) {
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function post(url, body) {
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  return res.json();
+}
+</script>
+
+</body>
+</html>
