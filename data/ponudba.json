@@ -37,7 +37,38 @@
       ],
       "vzpostavitev": "800,00 EUR",
       "mesecno": "/",
-      "opomba": "Cena je brez DDV (22 %). Skupni znesek z DDV: 976,00 EUR."
+      "opomba": "Projekt v 3 fazah",
+      "faze": [
+        {
+          "naslov": "1. faza — priprava in usklajevanje",
+          "trajanje": "1 teden",
+          "naloge": [
+            { "opis": "Uvodni sestanek z vodstvom in analiza potreb ekipe", "ure": "1 h", "vrednost": "100 €" },
+            { "opis": "Priprava prilagojenih vaj za turistični in avtomobilski sektor", "ure": "2 h", "vrednost": "200 €" }
+          ],
+          "skupaj_ure": "3 h",
+          "skupaj_vrednost": "300 €"
+        },
+        {
+          "naslov": "2. faza — izvedba delavnice",
+          "trajanje": "2 srečanji po 2,5 ure",
+          "naloge": [
+            { "opis": "1. srečanje: osnove AI in ključna orodja", "ure": "2,5 h", "vrednost": "200 €" },
+            { "opis": "2. srečanje: poglobljeni primeri za turizem in avto", "ure": "2,5 h", "vrednost": "200 €" }
+          ],
+          "skupaj_ure": "5 h",
+          "skupaj_vrednost": "400 €"
+        },
+        {
+          "naslov": "3. faza — zaključek in podpora",
+          "trajanje": "po delavnici",
+          "naloge": [
+            { "opis": "Povzetek materialov in priporočila za nadaljnjo uporabo", "ure": "1 h", "vrednost": "100 €" }
+          ],
+          "skupaj_ure": "1 h",
+          "skupaj_vrednost": "100 €"
+        }
+      ]
     }
   ]
 }

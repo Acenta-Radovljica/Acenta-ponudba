@@ -72,9 +72,29 @@ Vrni JSON točno v tej obliki:
       "tocke": ["točka 1", "točka 2", "točka 3", "točka 4"],
       "vzpostavitev": "cena npr. 429,00 EUR ali /",
       "mesecno": "cena npr. 190,00 EUR/mes. ali /",
-      "opomba": "kratka opomba ali prazno"
+      "opomba": "kratka opomba ali prazno (NE pisi DDV info — DDV je ze v skupnem polju)",
+      "faze": "OPCIJSKO polje — glej pravila spodaj"
     }
   ]
+}
+
+PRAVILA ZA POLJE "faze" (poglobljen prikaz cene):
+- Uporabi ga SAMO za projektne storitve, kjer ima smisel razložiti faze in ure: AI implementacije, AI delavnice, izobraževanja, razvojni projekti, svetovanje, audit, strateški projekti.
+- NE uporabljaj ga za stalne storitve: Google Ads, Meta Ads, SEO, družbena omrežja, mesečno upravljanje. Tam pusti polje "faze" prazno (ne dodaj ga sploh).
+- Ko ga uporabis, razdeli projekt na 2-3 faze (npr. "analiza", "izvedba", "spremljanje" ali podobno glede na vsebino).
+- V tem primeru polje "vzpostavitev" predstavlja SKUPNO ceno vseh faz (brez DDV), "mesecno" naj bo "/".
+- Cene faz se morajo sesteti v ceno storitve.
+
+Struktura faze:
+{
+  "naslov": "1. faza — analiza in načrtovanje",
+  "trajanje": "1–2 tedna",
+  "naloge": [
+    { "opis": "Intervjuji z zaposlenimi", "ure": "4 h", "vrednost": "400 €" },
+    { "opis": "Popis procesov", "ure": "3 h", "vrednost": "300 €" }
+  ],
+  "skupaj_ure": "7 h",
+  "skupaj_vrednost": "700 €"
 }`;
 
 // ── RAZČLENI z Claude ──────────────────────────────────────────────

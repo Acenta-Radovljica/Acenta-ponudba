@@ -216,6 +216,15 @@
     align-items: center;
     gap: 14px;
     margin-bottom: 18px;
+    break-after: avoid;
+    page-break-after: avoid;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .section-title,
+  h1, h2, h3, h4 {
+    break-after: avoid;
+    page-break-after: avoid;
   }
   .section-number {
     width: 36px;
@@ -441,23 +450,32 @@
 
   /* ── PROCESS / TIMELINE ─────────────────────────────── */
   .process-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  .process-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 16px;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .process-step {
-    display: flex;
+    display: grid;
+    grid-template-columns: 44px 1fr;
     gap: 16px;
-    align-items: flex-start;
-    page-break-inside: avoid;
-    break-inside: avoid;
+    align-items: start;
     padding: 20px;
     background: var(--white);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     transition: border-color 0.2s ease;
+    break-inside: avoid;
     page-break-inside: avoid;
+    -webkit-column-break-inside: avoid;
+    overflow: hidden;
   }
   .process-step:hover {
     border-color: var(--teal-light);
@@ -501,6 +519,90 @@
     color: var(--gray);
     line-height: 1.6;
     font-weight: 300;
+  }
+
+  /* ── FAZNI BLOK (projektne storitve z urami) ────────── */
+  .storitev-naslov {
+    font-size: 12pt;
+    font-weight: 700;
+    color: var(--dark);
+    margin: 8px 0 12px 0;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--teal);
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+  .faza-blok {
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--teal);
+    border-radius: var(--radius);
+    margin-bottom: 14px;
+    overflow: hidden;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .faza-glava {
+    background: #f7f9fa;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+  .faza-naslov {
+    font-size: 11pt;
+    font-weight: 700;
+    color: var(--dark);
+    margin-bottom: 2px;
+  }
+  .faza-trajanje {
+    font-size: 9pt;
+    color: var(--gray);
+    font-style: italic;
+  }
+  .faze-tabela {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .faze-tabela thead th {
+    background: #fafbfc;
+    padding: 8px 14px;
+    text-align: left;
+    font-size: 8pt;
+    font-weight: 600;
+    color: var(--gray);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .faze-tabela thead th:nth-child(2),
+  .faze-tabela thead th:nth-child(3) {
+    text-align: right;
+    white-space: nowrap;
+    width: 90px;
+  }
+  .faze-tabela tbody td {
+    padding: 8px 14px;
+    font-size: 9.5pt;
+    color: #333;
+    border-bottom: 1px solid #f1f3f5;
+  }
+  .faze-tabela tbody td:nth-child(2),
+  .faze-tabela tbody td:nth-child(3) {
+    text-align: right;
+    white-space: nowrap;
+    color: #555;
+  }
+  .faze-tabela tfoot .faza-skupaj td {
+    background: var(--pitch);
+    color: var(--white);
+    padding: 9px 14px;
+    font-size: 10pt;
+    font-weight: 700;
+  }
+  .faze-tabela tfoot .faza-skupaj td:nth-child(2),
+  .faze-tabela tfoot .faza-skupaj td:nth-child(3) {
+    text-align: right;
+    white-space: nowrap;
   }
 
   /* ── CTA BOX ────────────────────────────────────────── */
@@ -617,7 +719,6 @@
   /* ── COMPANY PRESENTATION ──────────────────────────── */
   .company-section {
     padding: 44px 52px 32px;
-    page-break-before: always;
   }
 
   .company-header {
@@ -625,6 +726,10 @@
     align-items: center;
     gap: 14px;
     margin-bottom: 28px;
+    break-after: avoid;
+    page-break-after: avoid;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .stats-row {
@@ -632,6 +737,8 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 12px;
     margin-bottom: 28px;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .stat-box {
@@ -839,6 +946,13 @@
   }
 
   /* ── PRINT STYLES ───────────────────────────────────── */
+  @page {
+    size: A4;
+    margin: 14mm 0 12mm 0;
+  }
+  @page :first {
+    margin: 0;
+  }
   @media print {
     body {
       -webkit-print-color-adjust: exact;
@@ -974,7 +1088,7 @@
       <div class="section-number">3</div>
       <h2 class="section-title">CENOVNA <span class="accent">STRUKTURA</span></h2>
     </div>
-    <p class="price-note">Vse cene so v EUR, brez DDV (22 %). {{OPOMBA_CENE}}</p>
+    {{FAZNI_BLOK_HTML}}
     <div class="price-table-wrapper">
       <table class="price-table">
         <thead>
@@ -1008,39 +1122,43 @@
     </div>
     <div class="process-grid">
 
-      <div class="process-step">
-        <div class="step-circle">1</div>
-        <div class="step-content">
-          <div class="step-label">Korak 1</div>
-          <div class="step-title">{{NASLOV_KORAK_1}}</div>
-          <div class="step-desc">{{KORAK_1}}</div>
+      <div class="process-row">
+        <div class="process-step">
+          <div class="step-circle">1</div>
+          <div class="step-content">
+            <div class="step-label">Korak 1</div>
+            <div class="step-title">{{NASLOV_KORAK_1}}</div>
+            <div class="step-desc">{{KORAK_1}}</div>
+          </div>
+        </div>
+
+        <div class="process-step">
+          <div class="step-circle">2</div>
+          <div class="step-content">
+            <div class="step-label">Korak 2</div>
+            <div class="step-title">{{NASLOV_KORAK_2}}</div>
+            <div class="step-desc">{{KORAK_2}}</div>
+          </div>
         </div>
       </div>
 
-      <div class="process-step">
-        <div class="step-circle">2</div>
-        <div class="step-content">
-          <div class="step-label">Korak 2</div>
-          <div class="step-title">{{NASLOV_KORAK_2}}</div>
-          <div class="step-desc">{{KORAK_2}}</div>
+      <div class="process-row">
+        <div class="process-step">
+          <div class="step-circle">3</div>
+          <div class="step-content">
+            <div class="step-label">Korak 3</div>
+            <div class="step-title">{{NASLOV_KORAK_3}}</div>
+            <div class="step-desc">{{KORAK_3}}</div>
+          </div>
         </div>
-      </div>
 
-      <div class="process-step">
-        <div class="step-circle">3</div>
-        <div class="step-content">
-          <div class="step-label">Korak 3</div>
-          <div class="step-title">{{NASLOV_KORAK_3}}</div>
-          <div class="step-desc">{{KORAK_3}}</div>
-        </div>
-      </div>
-
-      <div class="process-step">
-        <div class="step-circle">4</div>
-        <div class="step-content">
-          <div class="step-label">Korak 4</div>
-          <div class="step-title">{{NASLOV_KORAK_4}}</div>
-          <div class="step-desc">{{KORAK_4}}</div>
+        <div class="process-step">
+          <div class="step-circle">4</div>
+          <div class="step-content">
+            <div class="step-label">Korak 4</div>
+            <div class="step-title">{{NASLOV_KORAK_4}}</div>
+            <div class="step-desc">{{KORAK_4}}</div>
+          </div>
         </div>
       </div>
 

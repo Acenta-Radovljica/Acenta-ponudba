@@ -97,6 +97,76 @@ if (Array.isArray(podatki.storitve)) {
   } else {
     podatki.SKUPAJ_DDV_INFO = '';
   }
+
+  // ── FAZNI BLOK (samo za projektne storitve s poljem "faze") ────
+  let fazniBlok = '';
+  let fazniBlokWord = '';
+
+  podatki.storitve.forEach(s => {
+    if (!Array.isArray(s.faze) || s.faze.length === 0) return;
+
+    fazniBlok += `<div class="storitev-naslov">${s.naziv || ''}</div>`;
+    fazniBlokWord += `<p style="font-size:12pt;font-weight:bold;color:#0B0F10;margin:18px 0 8px 0;">${s.naziv || ''}</p>`;
+
+    s.faze.forEach(faza => {
+      const nalogeVrstice = (faza.naloge || []).map(n => `
+        <tr>
+          <td>${n.opis || ''}</td>
+          <td>${n.ure || ''}</td>
+          <td>${n.vrednost || ''}</td>
+        </tr>`).join('');
+
+      fazniBlok += `
+        <div class="faza-blok">
+          <div class="faza-glava">
+            <div class="faza-naslov">${faza.naslov || ''}</div>
+            ${faza.trajanje ? `<div class="faza-trajanje">Trajanje: ${faza.trajanje}</div>` : ''}
+          </div>
+          <table class="faze-tabela">
+            <thead>
+              <tr><th>Naloga</th><th>Ur</th><th>Vrednost</th></tr>
+            </thead>
+            <tbody>${nalogeVrstice}</tbody>
+            <tfoot>
+              <tr class="faza-skupaj">
+                <td>Skupaj faza</td>
+                <td>${faza.skupaj_ure || ''}</td>
+                <td>${faza.skupaj_vrednost || ''}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>`;
+
+      const nalogeWord = (faza.naloge || []).map(n => `
+        <tr>
+          <td style="padding:5px 12px;border-bottom:1px solid #f1f3f5;font-size:9.5pt;color:#333;">${n.opis || ''}</td>
+          <td style="padding:5px 12px;border-bottom:1px solid #f1f3f5;font-size:9.5pt;color:#333;text-align:right;white-space:nowrap;">${n.ure || ''}</td>
+          <td style="padding:5px 12px;border-bottom:1px solid #f1f3f5;font-size:9.5pt;color:#333;text-align:right;white-space:nowrap;">${n.vrednost || ''}</td>
+        </tr>`).join('');
+
+      fazniBlokWord += `
+        <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:14px;border:1px solid #dde3e6;border-left:4px solid #00AFAA;">
+          <tr><td colspan="3" style="padding:10px 14px;background:#f7f9fa;">
+            <p style="margin:0;font-weight:bold;font-size:11pt;color:#0B0F10;">${faza.naslov || ''}</p>
+            ${faza.trajanje ? `<p style="margin:2px 0 0 0;font-size:9pt;color:#888;font-style:italic;">Trajanje: ${faza.trajanje}</p>` : ''}
+          </td></tr>
+          <tr style="background:#fafbfc;">
+            <th style="padding:7px 12px;text-align:left;font-size:8.5pt;color:#666;text-transform:uppercase;border-bottom:1px solid #dde3e6;">Naloga</th>
+            <th style="padding:7px 12px;text-align:right;font-size:8.5pt;color:#666;text-transform:uppercase;border-bottom:1px solid #dde3e6;width:60px;">Ur</th>
+            <th style="padding:7px 12px;text-align:right;font-size:8.5pt;color:#666;text-transform:uppercase;border-bottom:1px solid #dde3e6;width:90px;">Vrednost</th>
+          </tr>
+          ${nalogeWord}
+          <tr style="background:#0B0F10;color:#fff;">
+            <td style="padding:8px 14px;font-weight:bold;font-size:10pt;color:#fff;">Skupaj faza</td>
+            <td style="padding:8px 14px;font-weight:bold;font-size:10pt;color:#fff;text-align:right;">${faza.skupaj_ure || ''}</td>
+            <td style="padding:8px 14px;font-weight:bold;font-size:10pt;color:#fff;text-align:right;">${faza.skupaj_vrednost || ''}</td>
+          </tr>
+        </table>`;
+    });
+  });
+
+  podatki.FAZNI_BLOK_HTML = fazniBlok;
+  podatki.FAZNI_BLOK_HTML_WORD = fazniBlokWord;
 }
 
 if (!podatki.DATUM) podatki.DATUM = new Date().toLocaleDateString('sl-SI');
@@ -206,7 +276,7 @@ if (ukaz === 'pdf') {
     path: pdfPot,
     format: 'A4',
     printBackground: true,
-    margin: { top: '0', right: '0', bottom: '0', left: '0' },
+    preferCSSPageSize: true,
   });
   await browser.close();
   console.log(`✓ PDF: ${pdfPot}`);
