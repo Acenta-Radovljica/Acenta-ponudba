@@ -73,29 +73,97 @@ Vrni JSON točno v tej obliki:
       "vzpostavitev": "cena npr. 429,00 EUR ali /",
       "mesecno": "cena npr. 190,00 EUR/mes. ali /",
       "opomba": "kratka opomba ali prazno (NE pisi DDV info — DDV je ze v skupnem polju)",
-      "faze": "OPCIJSKO polje — glej pravila spodaj"
+      "faze": []
     }
   ]
 }
 
-PRAVILA ZA POLJE "faze" (poglobljen prikaz cene):
-- Uporabi ga SAMO za projektne storitve, kjer ima smisel razložiti faze in ure: AI implementacije, AI delavnice, izobraževanja, razvojni projekti, svetovanje, audit, strateški projekti.
-- NE uporabljaj ga za stalne storitve: Google Ads, Meta Ads, SEO, družbena omrežja, mesečno upravljanje. Tam pusti polje "faze" prazno (ne dodaj ga sploh).
-- Ko ga uporabis, razdeli projekt na 2-3 faze (npr. "analiza", "izvedba", "spremljanje" ali podobno glede na vsebino).
-- V tem primeru polje "vzpostavitev" predstavlja SKUPNO ceno vseh faz (brez DDV), "mesecno" naj bo "/".
-- Cene faz se morajo sesteti v ceno storitve.
+═══════════════════════════════════════════════════════════════
+KRITIČNO PRAVILO — POLJE "faze" (poglobljen prikaz cene)
+═══════════════════════════════════════════════════════════════
 
-Struktura faze:
+KDAJ MORAŠ IZPOLNITI POLJE "faze" (z dejansko vsebino, ne praznim arrayem):
+Če storitev vsebuje katero od besed/konceptov:
+- "implementacija" (npr. AI implementacija, CRM implementacija)
+- "delavnica" / "izobraževanje"
+- "projekt" / "razvoj"
+- "svetovanje" / "audit" / "analiza"
+- "strategija" / "strateški"
+
+→ MORAŠ razdeliti storitev na 2-3 faze in izpolniti polje "faze".
+→ V tem primeru "vzpostavitev" = SKUPNA cena vseh faz brez DDV; "mesecno" = "/".
+→ Cene faz se morajo SESTETI v vzpostavitev.
+→ Vsaka faza ima 2-5 nalog z urami in ceno.
+
+KDAJ POLJE "faze" PUSTI PRAZNO ([]):
+- Google Ads, Meta Ads, LinkedIn Ads (stalno upravljanje)
+- SEO, družbena omrežja, vsebinski marketing (mesečno)
+- Spletna stran z mesečnim vzdrževanjem
+- Email marketing, newsletter
+→ V teh primerih navadno: "vzpostavitev" = enkratna cena, "mesecno" = mesečna cena.
+
+STRUKTURA POSAMEZNE FAZE:
 {
   "naslov": "1. faza — analiza in načrtovanje",
   "trajanje": "1–2 tedna",
   "naloge": [
-    { "opis": "Intervjuji z zaposlenimi", "ure": "4 h", "vrednost": "400 €" },
-    { "opis": "Popis procesov", "ure": "3 h", "vrednost": "300 €" }
+    { "opis": "Intervjuji z zaposlenimi (4 oddelki)", "ure": "4 h", "vrednost": "400 €" },
+    { "opis": "Popis procesov in ocenjevalna matrica", "ure": "3 h", "vrednost": "300 €" },
+    { "opis": "Poročilo z prioritetami in akcijskim načrtom", "ure": "3 h", "vrednost": "300 €" }
   ],
-  "skupaj_ure": "7 h",
-  "skupaj_vrednost": "700 €"
-}`;
+  "skupaj_ure": "10 h",
+  "skupaj_vrednost": "1.000 €"
+}
+
+PRIMER — AI IMPLEMENTACIJA ZA HOTEL (3 faze):
+"storitve": [{
+  "naziv": "Implementacija AI v poslovne procese",
+  "podnaslov": "AI implementacija | Strukturiran 3-fazni projekt",
+  "tocke": [
+    "Analiza procesov v izbranih oddelkih",
+    "Pilotna implementacija AI orodij",
+    "Skupna knjižnica promptov",
+    "Zaključno poročilo z merjenimi rezultati"
+  ],
+  "vzpostavitev": "4.000,00 EUR",
+  "mesecno": "/",
+  "opomba": "Projekt v 3 fazah, skupaj 40 ur",
+  "faze": [
+    {
+      "naslov": "1. faza — analiza in načrtovanje",
+      "trajanje": "1–2 tedna",
+      "naloge": [
+        { "opis": "Intervjuji z zaposlenimi (4 oddelki)", "ure": "4 h", "vrednost": "400 €" },
+        { "opis": "Popis procesov in ocenjevalna matrica", "ure": "3 h", "vrednost": "300 €" },
+        { "opis": "Poročilo z prioritetami", "ure": "3 h", "vrednost": "300 €" }
+      ],
+      "skupaj_ure": "10 h",
+      "skupaj_vrednost": "1.000 €"
+    },
+    {
+      "naslov": "2. faza — pilotna implementacija",
+      "trajanje": "3–4 tedne",
+      "naloge": [
+        { "opis": "Marketing: odgovarjanje na ocene gostov", "ure": "4 h", "vrednost": "400 €" },
+        { "opis": "Recepcija: FAQ in potrditveni e-maili", "ure": "4 h", "vrednost": "400 €" },
+        { "opis": "Delavnica z ekipo", "ure": "5 h", "vrednost": "500 €" }
+      ],
+      "skupaj_ure": "22 h",
+      "skupaj_vrednost": "2.200 €"
+    },
+    {
+      "naslov": "3. faza — spremljanje in optimizacija",
+      "trajanje": "4–6 tednov po zagonu",
+      "naloge": [
+        { "opis": "Dva follow-up sestanka", "ure": "3 h", "vrednost": "300 €" },
+        { "opis": "Zaključno poročilo z merjenimi rezultati", "ure": "3 h", "vrednost": "300 €" }
+      ],
+      "skupaj_ure": "8 h",
+      "skupaj_vrednost": "800 €"
+    }
+  ]
+}]
+═══════════════════════════════════════════════════════════════`;
 
 // ── RAZČLENI z Claude ──────────────────────────────────────────────
 app.post('/razcleni', async (req, res) => {
