@@ -18,6 +18,20 @@ Iz priloženega dokumenta ali besedila razčleni podatke in vrni SAMO veljaven J
 NIKOLI ne uporabljaj — (em dash). Namesto tega uporabi vejico, piko ali dvopičje.
 Cene vzemi iz cenika. Če cena ni v ceniku, vzemi ceno iz dokumenta.
 
+PRAVILA SLOVENSKEGA JEZIKA (kritično — pred oddajo JSON-a preveri vsa besedila):
+- VEDNO uporabljaj šumnike č, š, ž. Posebej previdno preveri te pogoste napake:
+  • "zaracuna" → "zaračuna"
+  • "vkljucena/vkljucen" → "vključena/vključen"
+  • "zakljucno/zakljucek" → "zaključno/zaključek"
+  • "porocilo/porocila" → "poročilo/poročila"
+  • "narocnik/narocilo" → "naročnik/naročilo"
+  • "obracuna" → "obračuna"
+  • "stevilo" → "število"
+  • "casa" → "časa"
+- Pravilna oblika: "inženiring" (NE "inžiniring"), "vlagate" (NE "vlagete"), "izvajate" (NE "izvajete"), "pripravljate" (NE "pripravljete").
+- Pri glagolih v 2. osebi množine je končnica "-ate" ali "-ite", redko "-ete" (primer: "vlagate", "pripravljate", "izvajate").
+- Vsa imena lastnih hotelov, podjetij in oseb pusti v originalni obliki iz vira.
+
 Cenik:
 ${cenik}
 
@@ -50,6 +64,7 @@ Vrni JSON točno v tej obliki:
   "IME_KOMERCIALISTA": "Mateja",
   "NAZIV_KOMERCIALISTA": "Komercialistka",
   "EMAIL_KOMERCIALISTA": "mateja@acenta.si",
+  "TELEFON_KOMERCIALISTA": "telefon ali prazno",
   "storitve": [
     {
       "naziv": "uradni naziv storitve",

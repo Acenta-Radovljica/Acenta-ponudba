@@ -259,6 +259,8 @@
     background: var(--white);
     border: 1px solid var(--border);
     border-left: 4px solid var(--teal);
+    page-break-inside: avoid;
+    break-inside: avoid;
     border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
     padding: 18px 22px;
     transition: box-shadow 0.2s ease;
@@ -362,6 +364,8 @@
     overflow: hidden;
     border: 1px solid var(--border);
     box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
 
   .price-table {
@@ -425,6 +429,15 @@
     font-weight: 700;
     letter-spacing: 0.5px;
   }
+  .price-table .total-sub {
+    display: block;
+    font-size: 8.5pt;
+    font-weight: 400;
+    opacity: 0.75;
+    letter-spacing: 0.2px;
+    margin-top: 3px;
+    text-transform: none;
+  }
 
   /* ── PROCESS / TIMELINE ─────────────────────────────── */
   .process-grid {
@@ -437,6 +450,8 @@
     display: flex;
     gap: 16px;
     align-items: flex-start;
+    page-break-inside: avoid;
+    break-inside: avoid;
     padding: 20px;
     background: var(--white);
     border: 1px solid var(--border);
@@ -844,9 +859,9 @@
       padding-top: 28px;
       padding-bottom: 0;
     }
-    /* Reduce spacing on page 2 to fit A4 */
+    /* Reduce spacing to avoid orphan whitespace */
     .section {
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
     .process-step {
       padding: 14px 16px;
@@ -948,10 +963,10 @@
     </div>
   </div>
 
-  <!-- Separator pred prelomom strani -->
-  <div style="margin: 12px 0 0; height: 2px; background: linear-gradient(90deg, #00AFAA, transparent);"></div>
+  <!-- Separator -->
+  <div style="margin: 18px 0 24px; height: 2px; background: linear-gradient(90deg, #00AFAA, transparent);"></div>
 
-  <div style="page-break-before: always; padding-top: 44px;">
+  <div>
 
   <!-- SECTION 3 — Cenovna struktura -->
   <div class="section">
@@ -973,7 +988,7 @@
         <tbody>
           {{VRSTICE_CEN}}
           <tr class="total-row">
-            <td>SKUPAJ</td>
+            <td>SKUPAJ<span class="total-sub">{{SKUPAJ_DDV_INFO}}</span></td>
             <td>{{SKUPAJ_VZPOSTAVITEV}}</td>
             <td>{{SKUPAJ_MESECNO}}</td>
             <td></td>
@@ -1056,6 +1071,7 @@
       <div class="signature-name">{{IME_KOMERCIALISTA}}</div>
       <div class="signature-role">{{NAZIV_KOMERCIALISTA}}</div>
       <div class="signature-email"><a href="mailto:{{EMAIL_KOMERCIALISTA}}">{{EMAIL_KOMERCIALISTA}}</a></div>
+      {{TELEFON_KOMERCIALISTA_HTML}}
     </div>
     <div class="signature-right">
       <div class="sig-logo">acenta</div>

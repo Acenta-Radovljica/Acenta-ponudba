@@ -313,9 +313,9 @@
 
       <!-- POGOJI (collapse) -->
       <button class="collapse-toggle" onclick="toggleCollapse('pogoji')">
-        <span id="arrow-pogoji">▶</span> Pogoji in komercialist
+        <span id="arrow-pogoji">▼</span> Pogoji in komercialist
       </button>
-      <div id="pogoji" class="hidden">
+      <div id="pogoji">
         <div class="sekcija-naslov" style="margin-top:16px;">Pogoji</div>
         <div class="form-grid full">
           <div class="field">
@@ -342,9 +342,13 @@
             <label>Naziv</label>
             <input type="text" id="f-NAZIV_KOMERCIALISTA">
           </div>
-          <div class="field" style="grid-column:span 2">
+          <div class="field">
             <label>Email</label>
             <input type="text" id="f-EMAIL_KOMERCIALISTA">
+          </div>
+          <div class="field">
+            <label>Telefon</label>
+            <input type="text" id="f-TELEFON_KOMERCIALISTA">
           </div>
         </div>
 
@@ -512,7 +516,7 @@ function zapolniFormo(p) {
     'DATUM','STEVILKA_PONUDBE','VELJAVNOST_PONUDBE','STORITEV_BADGE',
     'NASLOV','PODNASLOV','UVODNI_ODSTAVEK','OPOMBA_CENE',
     'PREDPOSTAVKE','IZKLUCITVE','PLACILNI_POGOJI',
-    'IME_KOMERCIALISTA','NAZIV_KOMERCIALISTA','EMAIL_KOMERCIALISTA',
+    'IME_KOMERCIALISTA','NAZIV_KOMERCIALISTA','EMAIL_KOMERCIALISTA','TELEFON_KOMERCIALISTA',
     'NASLOV_KORAK_1','KORAK_1','NASLOV_KORAK_2','KORAK_2',
     'NASLOV_KORAK_3','KORAK_3','NASLOV_KORAK_4','KORAK_4'
   ];

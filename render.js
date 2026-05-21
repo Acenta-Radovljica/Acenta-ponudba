@@ -70,16 +70,33 @@ if (Array.isArray(podatki.storitve)) {
     </tr>`;
   }).join('');
 
+  const formatEur = n =>
+    n.toLocaleString('sl-SI', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+
   const sestej = (vrednosti) => {
     const vsote = vrednosti
       .map(v => parseFloat((v || '0').replace(/[^\d,]/g, '').replace(',', '.')))
       .filter(n => !isNaN(n) && n > 0);
-    if (!vsote.length) return '';
+    if (!vsote.length) return { display: '', znesek: 0 };
     const skupaj = vsote.reduce((a, b) => a + b, 0);
-    return skupaj.toLocaleString('sl-SI', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+    return { display: formatEur(skupaj), znesek: skupaj };
   };
-  podatki.SKUPAJ_VZPOSTAVITEV = sestej(podatki.storitve.map(s => s.vzpostavitev));
-  podatki.SKUPAJ_MESECNO = sestej(podatki.storitve.map(s => s.mesecno)).replace(' €', ' €/mes.');
+
+  const skupajVzp = sestej(podatki.storitve.map(s => s.vzpostavitev));
+  const skupajMes = sestej(podatki.storitve.map(s => s.mesecno));
+
+  podatki.SKUPAJ_VZPOSTAVITEV = skupajVzp.display;
+  podatki.SKUPAJ_MESECNO = skupajMes.display ? skupajMes.display.replace(' €', ' €/mes.') : '';
+
+  // DDV info pod SKUPAJ pasom (22 %)
+  const skupajZnesek = skupajVzp.znesek + skupajMes.znesek;
+  if (skupajZnesek > 0) {
+    const ddv = skupajZnesek * 0.22;
+    const zDdv = skupajZnesek + ddv;
+    podatki.SKUPAJ_DDV_INFO = `DDV (22 %): ${formatEur(ddv)} · Z DDV: ${formatEur(zDdv)}`;
+  } else {
+    podatki.SKUPAJ_DDV_INFO = '';
+  }
 }
 
 if (!podatki.DATUM) podatki.DATUM = new Date().toLocaleDateString('sl-SI');
@@ -109,6 +126,15 @@ if (naslovStranke)  sdw += `<tr><td style="padding:2px 20px 2px 0;color:#888;">N
 if (kontaktnaOseba) sdw += `<tr><td style="padding:2px 20px 2px 0;color:#888;">Kontakt:</td><td style="padding:2px 0;color:#1a1a1a;font-weight:bold;">${kontaktnaOseba}</td></tr>`;
 if (telefonStranke) sdw += `<tr><td style="padding:2px 20px 2px 0;color:#888;">Tel:</td><td style="padding:2px 0;color:#1a1a1a;font-weight:bold;">${telefonStranke}</td></tr>`;
 podatki.STRANKA_DETAILS_WORD = sdw;
+
+// ── TELEFON KOMERCIALISTA (opcijsko polje v podpisu) ─────────────
+const telefonKom = podatki.TELEFON_KOMERCIALISTA || '';
+podatki.TELEFON_KOMERCIALISTA_HTML = telefonKom
+  ? `<div class="signature-email">${telefonKom}</div>`
+  : '';
+podatki.TELEFON_KOMERCIALISTA_HTML_WORD = telefonKom
+  ? `<div style="font-size:9.5pt;color:#888;">${telefonKom}</div>`
+  : '';
 
 // ── POGOJI (predpostavke, izklucitve, placilni pogoji) ───────────
 const predpostavke   = podatki.PREDPOSTAVKE    || '';
