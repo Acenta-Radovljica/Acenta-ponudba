@@ -543,14 +543,19 @@ function zberiForme() {
   document.querySelectorAll('.storitev-card').forEach(card => {
     const idx = card.dataset.idx;
     const tockeRaw = document.getElementById(`s-tocke-${idx}`).value;
-    p.storitve.push({
+    const storitev = {
       naziv: document.getElementById(`s-naziv-${idx}`).value,
       podnaslov: document.getElementById(`s-podnaslov-${idx}`).value,
       tocke: tockeRaw.split('\n').map(t => t.trim()).filter(Boolean),
       vzpostavitev: document.getElementById(`s-vzp-${idx}`).value,
       mesecno: document.getElementById(`s-mes-${idx}`).value,
       opomba: document.getElementById(`s-opomba-${idx}`).value,
-    });
+    };
+    // Ohrani fazni razclen iz Claudovega razclena (frontend ga ne ureja)
+    if (card.dataset.faze) {
+      try { storitev.faze = JSON.parse(card.dataset.faze); } catch {}
+    }
+    p.storitve.push(storitev);
   });
   return p;
 }
@@ -562,11 +567,19 @@ function dodajStoritevZPodatki(s = {}) {
   const div = document.createElement('div');
   div.className = 'storitev-card';
   div.dataset.idx = idx;
+  // Shrani fazni razclen (ce obstaja) za nadaljnji prenos na render
+  if (Array.isArray(s.faze) && s.faze.length > 0) {
+    div.dataset.faze = JSON.stringify(s.faze);
+  }
+  const faznoOpozorilo = (Array.isArray(s.faze) && s.faze.length > 0)
+    ? `<div style="background:#e8f7f6;border-left:3px solid #00AFAA;padding:8px 12px;margin-top:8px;font-size:9pt;color:#0B0F10;">✓ Fazni prikaz cene (${s.faze.length} faz) — bo viden v PDF/Word</div>`
+    : '';
   div.innerHTML = `
     <div class="storitev-header">
       <div class="storitev-label">Storitev ${idx + 1}</div>
       <button class="btn-remove" onclick="this.closest('.storitev-card').remove()" title="Odstrani">×</button>
     </div>
+    ${faznoOpozorilo}
     <div class="form-grid full" style="gap:10px;">
       <div class="field">
         <label>Naziv storitve</label>
