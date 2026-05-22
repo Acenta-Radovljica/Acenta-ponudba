@@ -59,6 +59,16 @@ if (Array.isArray(podatki.storitve)) {
   // Pretvori — ali prazno vrednost v prazen niz za prikaz v tabeli
   const cenaAliPrazno = v => (!v || v === '—' || v === '–') ? '' : v;
 
+  // Odstrani DDV omembe iz opombe (DDV se prikaže v SKUPAJ pasu)
+  const ociscOpombo = (txt) => {
+    if (!txt) return '';
+    return txt
+      .replace(/[.\s]*Cena\s+je\s+brez\s+DDV[^.]*\.?/gi, '')
+      .replace(/[.\s]*brez\s+DDV\s*\(?22\s*%?\)?[^.]*\.?/gi, '')
+      .replace(/[.\s]*DDV\s*\(22\s*%\)[^.]*\.?/gi, '')
+      .trim();
+  };
+
   podatki.VRSTICE_CEN = podatki.storitve.map((s, i) => {
     const bg = i % 2 === 1 ? 'background-color:#f7f9fa;' : '';
     return `
@@ -66,7 +76,7 @@ if (Array.isArray(podatki.storitve)) {
       <td style="padding:10px 14px;color:#333;border:1px solid #e0e5e8;">${s.naziv || ''}</td>
       <td style="padding:10px 14px;color:#333;border:1px solid #e0e5e8;text-align:right;white-space:nowrap;">${cenaAliPrazno(s.vzpostavitev)}</td>
       <td style="padding:10px 14px;color:#333;border:1px solid #e0e5e8;text-align:right;white-space:nowrap;">${cenaAliPrazno(s.mesecno)}</td>
-      <td style="padding:10px 14px;color:#999;font-size:8.5pt;font-style:italic;border:1px solid #e0e5e8;">${s.opomba || ''}</td>
+      <td style="padding:10px 14px;color:#999;font-size:8.5pt;font-style:italic;border:1px solid #e0e5e8;">${ociscOpombo(s.opomba)}</td>
     </tr>`;
   }).join('');
 

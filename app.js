@@ -72,7 +72,7 @@ Vrni JSON točno v tej obliki:
       "tocke": ["točka 1", "točka 2", "točka 3", "točka 4"],
       "vzpostavitev": "cena npr. 429,00 EUR ali /",
       "mesecno": "cena npr. 190,00 EUR/mes. ali /",
-      "opomba": "kratka opomba ali prazno (NE pisi DDV info — DDV je ze v skupnem polju)",
+      "opomba": "kratka opomba ali prazno — PREPOVEDANO pisati karkoli o DDV, ceni brez DDV, 22 %, itd. DDV se izpise samodejno v SKUPAJ pasu.",
       "faze": []
     }
   ]
