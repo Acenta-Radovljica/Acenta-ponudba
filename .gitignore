@@ -5,3 +5,4 @@ output/
 *.pdf
 .ponudbe/
 .takeover/
+data/ponudba.json
