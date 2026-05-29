@@ -1,7 +1,7 @@
 import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
-import { readFileSync, writeFileSync, mkdirSync } from 'fs';
-import { resolve, dirname, basename } from 'path';
+import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { resolve, dirname, basename, extname, sep } from 'path';
 import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
 
@@ -40,7 +40,7 @@ Vrni JSON točno v tej obliki:
   "STORITEV_BADGE": "kratka oznaka, npr. Google Ads ali Delavnica AI",
   "NASLOV": "privlačen naslov ponudbe, specifičen za stranko",
   "PODNASLOV": "1 stavek kaj ponudba rešuje",
-  "DATUM": "datum v formatu D. M. YYYY",
+  "DATUM": "datum iz dokumenta v formatu D. M. YYYY ali prazno, če datum ni naveden",
   "STEVILKA_PONUDBE": "številka iz dokumenta ali prazno",
   "IME_STRANKE": "polno ime podjetja",
   "NASLOV_STRANKE": "ulica in kraj ali prazno",
@@ -196,7 +196,12 @@ app.post('/razcleni', async (req, res) => {
       .replace(/^```json\n?/, '')
       .replace(/\n?```$/, '');
 
-    res.json({ ok: true, podatki: JSON.parse(text) });
+    const podatki = normalizirajPonudbo(JSON.parse(text), {
+      vir: besedilo || '',
+      preveriDatum: Boolean(besedilo)
+    });
+
+    res.json({ ok: true, podatki: podatki.data, opozorila: podatki.opozorila });
 
   } catch (err) {
     console.error('Napaka /razcleni:', err.message);
@@ -208,9 +213,10 @@ app.post('/razcleni', async (req, res) => {
 app.post('/generiraj-word', async (req, res) => {
   try {
     mkdirSync(resolve(__dirname, 'data'), { recursive: true });
+    const podatki = normalizirajPonudbo(req.body, { preveriDatum: false }).data;
     writeFileSync(
       resolve(__dirname, 'data/ponudba.json'),
-      JSON.stringify(req.body, null, 2)
+      JSON.stringify(podatki, null, 2)
     );
     const pot = await runRender('word');
     res.json({ ok: true, datoteka: basename(pot) });
@@ -234,13 +240,66 @@ app.post('/generiraj-pdf', async (req, res) => {
 // ── DOWNLOAD ───────────────────────────────────────────────────────
 app.get('/prenesi/word/:datoteka', (req, res) => {
   const mapa = process.env.OSNUTKI_MAPA || resolve(__dirname, 'output/osnutki');
-  res.download(resolve(mapa, req.params.datoteka));
+  prenesiIzMape(res, mapa, req.params.datoteka, '.docx');
 });
 
 app.get('/prenesi/pdf/:datoteka', (req, res) => {
   const mapa = process.env.IZHOD_MAPA || resolve(__dirname, 'output');
-  res.download(resolve(mapa, req.params.datoteka));
+  prenesiIzMape(res, mapa, req.params.datoteka, '.pdf');
 });
+
+function prenesiIzMape(res, mapa, datoteka, dovoljenaKoncnica) {
+  const varnaMapa = resolve(mapa);
+  const ime = basename(datoteka);
+  if (extname(ime).toLowerCase() !== dovoljenaKoncnica) {
+    return res.status(400).json({ ok: false, napaka: 'Neveljavna datoteka.' });
+  }
+
+  const pot = resolve(varnaMapa, ime);
+  if (!pot.startsWith(varnaMapa + sep)) {
+    return res.status(400).json({ ok: false, napaka: 'Neveljavna datoteka.' });
+  }
+
+  if (!existsSync(pot)) {
+    return res.status(404).json({ ok: false, napaka: 'Datoteka ne obstaja.' });
+  }
+
+  res.download(pot);
+}
+
+function normalizirajPonudbo(data, { vir = '', preveriDatum = false } = {}) {
+  const opozorila = [];
+  const normalizirajNiz = (vrednost) => String(vrednost)
+    .replace(/\s+—\s+/g, ': ')
+    .replace(/—/g, ',')
+    .replace(/\bobnaša\s+nju\b/gi, 'obnašanju')
+    .replace(/\bz ključnimi\b/gi, 's ključnimi');
+
+  const rekurzivno = (vrednost) => {
+    if (typeof vrednost === 'string') return normalizirajNiz(vrednost);
+    if (Array.isArray(vrednost)) return vrednost.map(rekurzivno);
+    if (vrednost && typeof vrednost === 'object') {
+      return Object.fromEntries(
+        Object.entries(vrednost).map(([k, v]) => [k, rekurzivno(v)])
+      );
+    }
+    return vrednost;
+  };
+
+  const normalized = rekurzivno(data);
+
+  if (preveriDatum && normalized.DATUM && !virVsebujeDatum(vir)) {
+    normalized.DATUM = '';
+    opozorila.push('Datum ni bil naveden v briefu, zato je polje DATUM ostalo prazno.');
+  }
+
+  return { data: normalized, opozorila };
+}
+
+function virVsebujeDatum(vir) {
+  return /\b\d{1,2}\.\s*\d{1,2}\.\s*\d{2,4}\b/.test(vir)
+    || /\b\d{4}-\d{2}-\d{2}\b/.test(vir);
+}
 
 // ── RENDER HELPER ──────────────────────────────────────────────────
 function runRender(ukaz) {

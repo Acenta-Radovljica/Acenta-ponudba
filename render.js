@@ -179,7 +179,9 @@ if (Array.isArray(podatki.storitve)) {
   podatki.FAZNI_BLOK_HTML_WORD = fazniBlokWord;
 }
 
-if (!podatki.DATUM) podatki.DATUM = new Date().toLocaleDateString('sl-SI');
+if (podatki.DATUM === undefined || podatki.DATUM === null) {
+  podatki.DATUM = new Date().toLocaleDateString('sl-SI');
+}
 if (!podatki.STEVILKA_PONUDBE) podatki.STEVILKA_PONUDBE = `P${Date.now().toString().slice(-6)}`;
 
 // Fallback naslovi za korake (stari JSONi brez NASLOV_KORAK polj)
