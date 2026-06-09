@@ -198,7 +198,7 @@
       <div class="card-title">Vnos podatkov <span>—</span> PDF ali besedilo</div>
 
       <div class="tabs">
-        <button class="tab active" onclick="switchTab('pdf')">PDF upload</button>
+        <button class="tab active" onclick="switchTab('pdf')">Naloži dokument</button>
         <button class="tab" onclick="switchTab('text')">Prilepi besedilo</button>
       </div>
 
@@ -208,10 +208,10 @@
           ondragleave="this.classList.remove('drag')"
           ondrop="handleDrop(event)">
           <div class="upload-icon">📄</div>
-          <div>Klikni ali povleci PDF sem</div>
+          <div>Klikni ali povleci dokument sem (PDF, Word .docx, TXT)</div>
           <div id="upload-filename" class="upload-filename hidden"></div>
         </div>
-        <input type="file" id="file-input" accept=".pdf" onchange="handleFile(this.files[0])">
+        <input type="file" id="file-input" accept=".pdf,.docx,.txt" onchange="handleFile(this.files[0])">
       </div>
 
       <div id="tab-text" class="hidden">
@@ -414,6 +414,23 @@
         <a id="word-link" href="#" class="btn btn-outline" download>Prenesi</a>
       </div>
 
+      <!-- NALOŽI POPRAVLJEN WORD -->
+      <div class="upload-area" id="word-upload-area" style="padding:24px;margin-bottom:16px;"
+        onclick="document.getElementById('word-file-input').click()"
+        ondragover="event.preventDefault();this.classList.add('drag')"
+        ondragleave="this.classList.remove('drag')"
+        ondrop="handleWordDrop(event)">
+        <div class="upload-icon">📤</div>
+        <div>Si popravil Word? Naloži ga sem za posodobitev vsebine</div>
+        <div id="word-upload-filename" class="upload-filename hidden"></div>
+      </div>
+      <input type="file" id="word-file-input" accept=".docx" style="display:none" onchange="handleWordUpload(this.files[0])">
+
+      <div id="word-upload-loading" class="hidden" style="text-align:center;padding:20px 0;">
+        <div class="spinner"></div>
+        <div class="loading-text">Berem Word in generiram PDF...</div>
+      </div>
+
       <div id="pdf-box" class="download-box hidden" style="border-color:#1a7a4a;background:#f0fdf4;">
         <div class="download-icon">📕</div>
         <div class="download-info">
@@ -443,14 +460,15 @@
 
 <script>
 let aktivniTab = 'pdf';
-let pdfBase64 = null;
+let nalozenaDatoteka = null;   // { vrsta: 'pdf'|'docx'|'txt', vsebina }
 let storitevIndex = 0;
 
 // ── TABS ──────────────────────────────────────────────────────────
 function switchTab(tab) {
   aktivniTab = tab;
+  const indeks = { pdf: 0, text: 1 };
   document.querySelectorAll('.tab').forEach((t, i) => {
-    t.classList.toggle('active', (i === 0 && tab === 'pdf') || (i === 1 && tab === 'text'));
+    t.classList.toggle('active', i === indeks[tab]);
   });
   document.getElementById('tab-pdf').classList.toggle('hidden', tab !== 'pdf');
   document.getElementById('tab-text').classList.toggle('hidden', tab !== 'text');
@@ -458,15 +476,35 @@ function switchTab(tab) {
 
 // ── FILE HANDLING ─────────────────────────────────────────────────
 function handleFile(file) {
-  if (!file || file.type !== 'application/pdf') return;
+  if (!file) return;
+  const ime = file.name.toLowerCase();
+  let vrsta;
+  if (ime.endsWith('.pdf')) vrsta = 'pdf';
+  else if (ime.endsWith('.docx')) vrsta = 'docx';
+  else if (ime.endsWith('.txt')) vrsta = 'txt';
+  else {
+    prikaziNapako(document.getElementById('vnos-napaka'),
+      'Nepodprt format. Naloži PDF, Word (.docx) ali TXT.');
+    return;
+  }
+
   const area = document.getElementById('upload-area');
   area.classList.add('has-file');
   area.classList.remove('drag');
   document.getElementById('upload-filename').textContent = file.name;
   document.getElementById('upload-filename').classList.remove('hidden');
+  document.getElementById('vnos-napaka').classList.add('hidden');
+
   const reader = new FileReader();
-  reader.onload = e => { pdfBase64 = e.target.result.split(',')[1]; };
-  reader.readAsDataURL(file);
+  if (vrsta === 'txt') {
+    // TXT beremo kot navadno besedilo
+    reader.onload = e => { nalozenaDatoteka = { vrsta, vsebina: e.target.result }; };
+    reader.readAsText(file);
+  } else {
+    // PDF in DOCX beremo kot base64
+    reader.onload = e => { nalozenaDatoteka = { vrsta, vsebina: e.target.result.split(',')[1] }; };
+    reader.readAsDataURL(file);
+  }
 }
 
 function handleDrop(e) {
@@ -483,8 +521,10 @@ async function razcleni() {
 
   const body = {};
   if (aktivniTab === 'pdf') {
-    if (!pdfBase64) { prikaziNapako(napaka, 'Najprej naloži PDF datoteko.'); return; }
-    body.pdf = pdfBase64;
+    if (!nalozenaDatoteka) { prikaziNapako(napaka, 'Najprej naloži dokument (PDF, Word ali TXT).'); return; }
+    if (nalozenaDatoteka.vrsta === 'pdf')       body.pdf = nalozenaDatoteka.vsebina;
+    else if (nalozenaDatoteka.vrsta === 'docx') body.docx = nalozenaDatoteka.vsebina;
+    else if (nalozenaDatoteka.vrsta === 'txt')  body.besedilo = nalozenaDatoteka.vsebina;
   } else {
     const t = document.getElementById('besedilo').value.trim();
     if (!t) { prikaziNapako(napaka, 'Najprej prilepi besedilo.'); return; }
@@ -661,6 +701,61 @@ async function generiraiPdf() {
     btn.classList.remove('hidden');
   } finally {
     document.getElementById('pdf-loading').classList.add('hidden');
+  }
+}
+
+// ── NALOŽI POPRAVLJEN WORD ────────────────────────────────────────
+function handleWordDrop(e) {
+  e.preventDefault();
+  document.getElementById('word-upload-area').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) handleWordUpload(file);
+}
+
+async function handleWordUpload(file) {
+  if (!file || !file.name.toLowerCase().endsWith('.docx')) return;
+  const napaka = document.getElementById('dokument-napaka');
+  napaka.classList.add('hidden');
+
+  const area = document.getElementById('word-upload-area');
+  const filenameEl = document.getElementById('word-upload-filename');
+  area.classList.add('has-file');
+  area.classList.remove('drag');
+  filenameEl.textContent = file.name;
+  filenameEl.classList.remove('hidden');
+
+  // Preberi kot base64
+  const docx = await new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onload = e => res(e.target.result.split(',')[1]);
+    reader.onerror = rej;
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById('word-upload-loading').classList.remove('hidden');
+  document.getElementById('btn-pdf').classList.add('hidden');
+
+  try {
+    // 1) Preberi popravljen Word nazaj v strukturo (ohrani vrednosti verbatim)
+    const parsed = await post('/razcleni', { docx, ohraniVerbatim: true });
+    if (!parsed.ok) throw new Error(parsed.napaka);
+
+    // Osvezi formo, da je vsebina skladna ce gre uporabnik kasneje urejat
+    zapolniFormo(parsed.podatki);
+
+    // 2) Takoj generiraj PDF iz vsebine Worda
+    const res = await post('/generiraj-pdf', parsed.podatki);
+    if (!res.ok) throw new Error(res.napaka);
+
+    document.getElementById('pdf-filename').textContent = res.datoteka;
+    document.getElementById('pdf-link').href = '/prenesi/pdf/' + res.datoteka;
+    document.getElementById('pdf-box').classList.remove('hidden');
+  } catch (err) {
+    prikaziNapako(napaka, 'Napaka: ' + err.message);
+  } finally {
+    document.getElementById('word-upload-loading').classList.add('hidden');
+    area.classList.remove('has-file');
+    filenameEl.classList.add('hidden');
   }
 }
 

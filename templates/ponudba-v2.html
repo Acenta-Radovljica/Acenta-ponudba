@@ -275,6 +275,10 @@
     transition: box-shadow 0.2s ease;
     page-break-inside: avoid;
   }
+  .service-card--tall {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
   .service-card:hover {
     box-shadow: 0 4px 20px rgba(0, 175, 170, 0.08);
   }
@@ -321,6 +325,140 @@
     border-radius: 50%;
     background: var(--teal-bg);
     border: 2px solid var(--teal);
+  }
+
+  /* Opis & obseg znotraj kartice (prosta vsebina iz Worda) */
+  .service-card .card-desc {
+    font-size: 9.5pt;
+    color: #555;
+    font-weight: 300;
+    line-height: 1.6;
+    margin: 0 0 10px 0;
+  }
+  .service-card .card-obseg {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    page-break-inside: auto;
+  }
+  .card-obseg .obseg-naslov {
+    font-size: 10pt;
+    font-weight: 600;
+    color: var(--teal-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 10px;
+  }
+  .card-obseg .obseg-skupina {
+    margin-bottom: 10px;
+    page-break-inside: avoid;
+  }
+  .card-obseg .obseg-skupina-naslov {
+    font-size: 9.5pt;
+    font-weight: 600;
+    color: var(--dark);
+    margin-bottom: 4px;
+  }
+  .card-obseg .obseg-uvod {
+    font-size: 9pt;
+    color: #555;
+    font-weight: 300;
+    margin: 0 0 4px 0;
+  }
+  .card-obseg ul.obseg-list {
+    display: block;
+    grid-template-columns: none;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .card-obseg ul.obseg-list li {
+    font-size: 9pt;
+    color: #555;
+    font-weight: 300;
+    padding: 3px 0 3px 16px;
+    border-bottom: none;
+    position: relative;
+  }
+  .card-obseg ul.obseg-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--teal);
+    border: none;
+  }
+
+  /* Dodatna opcija — prosti blok v cenovni strukturi */
+  .dodatna-opcija {
+    margin-top: 18px;
+    background: var(--teal-bg);
+    border-left: 4px solid var(--teal);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 16px 20px;
+    page-break-inside: avoid;
+  }
+  .dodatna-opcija .dop-naslov {
+    font-size: 11pt;
+    font-weight: 600;
+    color: var(--teal-dark);
+    margin-bottom: 6px;
+  }
+  .dodatna-opcija .dop-uvod {
+    font-size: 9.5pt;
+    color: #555;
+    font-weight: 300;
+    line-height: 1.6;
+    margin: 0 0 10px 0;
+  }
+  .dodatna-opcija ul.dop-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 10px 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 24px;
+  }
+  .dodatna-opcija ul.dop-list li {
+    font-size: 9pt;
+    color: #555;
+    font-weight: 300;
+    padding: 4px 0 4px 16px;
+    position: relative;
+  }
+  .dodatna-opcija ul.dop-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--teal);
+  }
+  .dodatna-opcija .dop-investicija {
+    border-top: 1px solid var(--border);
+    padding-top: 8px;
+  }
+  .dodatna-opcija .dop-inv-label {
+    display: block;
+    font-size: 8pt;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 4px;
+  }
+  .dodatna-opcija .dop-inv-row {
+    font-size: 9.5pt;
+    color: var(--dark);
+    font-weight: 400;
+    padding: 2px 0;
   }
 
   /* Info box variant for injected content */
@@ -381,6 +519,11 @@
     width: 100%;
     border-collapse: collapse;
     font-size: 9.5pt;
+    table-layout: fixed;
+  }
+  .price-table td {
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
   .price-table thead tr {
     background: linear-gradient(135deg, var(--teal-dark), var(--teal));
@@ -414,6 +557,8 @@
     text-align: right;
     font-weight: 400;
     font-variant-numeric: tabular-nums;
+  }
+  .price-table tbody td:nth-child(2) {
     white-space: nowrap;
   }
   .price-table tbody td:nth-child(4) {
@@ -446,7 +591,6 @@
     letter-spacing: 0.2px;
     text-transform: none;
     line-height: 1.4;
-    white-space: nowrap;
   }
 
   /* ── PROCESS / TIMELINE ─────────────────────────────── */
@@ -1092,6 +1236,12 @@
     {{FAZNI_BLOK_HTML}}
     <div class="price-table-wrapper">
       <table class="price-table">
+        <colgroup>
+          <col style="width:23%">
+          <col style="width:19%">
+          <col style="width:22%">
+          <col style="width:36%">
+        </colgroup>
         <thead>
           <tr>
             <th>Storitev</th>
@@ -1111,60 +1261,13 @@
         </tbody>
       </table>
     </div>
+    {{DODATNA_OPCIJA_HTML}}
   </div>
 
   {{POGOJI_HTML}}
 
-  <!-- SECTION 4 — Kako poteka sodelovanje? -->
-  <div class="section">
-    <div class="section-header">
-      <div class="section-number">4</div>
-      <h2 class="section-title">KAKO POTEKA <span class="accent">SODELOVANJE?</span></h2>
-    </div>
-    <div class="process-grid">
-
-      <div class="process-row">
-        <div class="process-step">
-          <div class="step-circle">1</div>
-          <div class="step-content">
-            <div class="step-label">Korak 1</div>
-            <div class="step-title">{{NASLOV_KORAK_1}}</div>
-            <div class="step-desc">{{KORAK_1}}</div>
-          </div>
-        </div>
-
-        <div class="process-step">
-          <div class="step-circle">2</div>
-          <div class="step-content">
-            <div class="step-label">Korak 2</div>
-            <div class="step-title">{{NASLOV_KORAK_2}}</div>
-            <div class="step-desc">{{KORAK_2}}</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="process-row">
-        <div class="process-step">
-          <div class="step-circle">3</div>
-          <div class="step-content">
-            <div class="step-label">Korak 3</div>
-            <div class="step-title">{{NASLOV_KORAK_3}}</div>
-            <div class="step-desc">{{KORAK_3}}</div>
-          </div>
-        </div>
-
-        <div class="process-step">
-          <div class="step-circle">4</div>
-          <div class="step-content">
-            <div class="step-label">Korak 4</div>
-            <div class="step-title">{{NASLOV_KORAK_4}}</div>
-            <div class="step-desc">{{KORAK_4}}</div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
+  <!-- SECTION 4 — Kako poteka sodelovanje? (dinamično, glej render.js) -->
+  {{RAZDELEK_KORAKI}}
 
   <!-- CTA BOX -->
   <div class="cta-box">
@@ -1208,7 +1311,7 @@
 <div class="company-section">
 
   <div class="company-header">
-    <div class="section-number">5</div>
+    <div class="section-number">{{ST_RAZDELEK_PODJETJE}}</div>
     <h2 class="section-title">O PODJETJU <span class="accent">ACENTA</span></h2>
   </div>
 

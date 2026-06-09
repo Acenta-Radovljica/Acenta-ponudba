@@ -24,12 +24,36 @@ const podatki = JSON.parse(readFileSync(jsonPot, 'utf8'));
 if (Array.isArray(podatki.storitve)) {
 
   // PDF kartice (CSS grid)
-  podatki.KARTICE_STORITEV = podatki.storitve.map(s => `
-    <div class="service-card">
+  podatki.KARTICE_STORITEV = podatki.storitve.map(s => {
+    // Neobvezni opisni odstavki (prosta vsebina iz popravljenega Worda)
+    const opisArr = Array.isArray(s.opis) ? s.opis : (s.opis ? [s.opis] : []);
+    const opisHtml = opisArr.map(p => `<p class="card-desc">${p}</p>`).join('');
+
+    // Neobvezni strukturiran "obseg" blok (podnaslovi z naštevanji)
+    let obsegHtml = '';
+    if (s.obseg && Array.isArray(s.obseg.skupine)) {
+      const skupine = s.obseg.skupine.map(g => `
+        <div class="obseg-skupina">
+          <div class="obseg-skupina-naslov">${g.naslov || ''}</div>
+          ${g.uvod ? `<p class="obseg-uvod">${g.uvod}</p>` : ''}
+          <ul class="obseg-list">${(g.tocke || []).map(t => `<li>${t}</li>`).join('')}</ul>
+        </div>`).join('');
+      obsegHtml = `
+      <div class="card-obseg">
+        <div class="obseg-naslov">${s.obseg.naslov || ''}</div>${skupine}
+      </div>`;
+    }
+
+    // Velike kartice (z OBSEG blokom) smejo teči čez strani, da ne puščajo lukenj
+    const karticaClass = obsegHtml ? 'service-card service-card--tall' : 'service-card';
+    return `
+    <div class="${karticaClass}">
       <div class="card-title">${s.naziv || ''}</div>
       <div class="card-subtitle">${s.podnaslov || ''}</div>
-      <ul>${(s.tocke || []).map(t => `<li>${t}</li>`).join('')}</ul>
-    </div>`).join('');
+      ${opisHtml}
+      <ul>${(s.tocke || []).map(t => `<li>${t}</li>`).join('')}</ul>${obsegHtml}
+    </div>`;
+  }).join('');
 
   // Word kartice (table layout za html-to-docx)
   podatki.KARTICE_STORITEV_WORD = podatki.storitve.map(s => {
@@ -75,7 +99,7 @@ if (Array.isArray(podatki.storitve)) {
     <tr style="${bg}">
       <td style="padding:10px 14px;color:#333;border:1px solid #e0e5e8;">${s.naziv || ''}</td>
       <td style="padding:10px 14px;color:#333;border:1px solid #e0e5e8;text-align:right;white-space:nowrap;">${cenaAliPrazno(s.vzpostavitev)}</td>
-      <td style="padding:10px 14px;color:#333;border:1px solid #e0e5e8;text-align:right;white-space:nowrap;">${cenaAliPrazno(s.mesecno)}</td>
+      <td style="padding:10px 14px;color:#333;border:1px solid #e0e5e8;text-align:right;">${cenaAliPrazno(s.mesecno)}</td>
       <td style="padding:10px 14px;color:#999;font-size:8.5pt;font-style:italic;border:1px solid #e0e5e8;">${ociscOpombo(s.opomba)}</td>
     </tr>`;
   }).join('');
@@ -83,30 +107,52 @@ if (Array.isArray(podatki.storitve)) {
   const formatEur = n =>
     n.toLocaleString('sl-SI', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
 
+  // Prava cena = SAMO številka v obliki "190,00 €" / "17,00 EUR/mes." (brez opisnih besed).
+  // Opisne vrednosti ("od 19 dalje", "od 250 do 900 EUR") se v seštevek NE štejejo —
+  // sicer bi regex zlepil "250" in "900" v 250900 in pokvaril vsoto.
+  const jeCistaCena = (v) =>
+    /^\s*\d{1,3}(\.\d{3})*,\d{2}\s*(€|EUR)(\s*\/\s*mes\.?)?\s*$/.test(v || '');
+
   const sestej = (vrednosti) => {
-    const vsote = vrednosti
-      .map(v => parseFloat((v || '0').replace(/[^\d,]/g, '').replace(',', '.')))
-      .filter(n => !isNaN(n) && n > 0);
-    if (!vsote.length) return { display: '', znesek: 0 };
+    let imeloOpisne = false;
+    const vsote = [];
+    for (const v of vrednosti) {
+      if (!v || v === '—' || v === '–') continue;          // prazno → preskoči
+      if (jeCistaCena(v)) {
+        const n = parseFloat(v.replace(/[^\d,]/g, '').replace(',', '.'));
+        if (!isNaN(n) && n > 0) vsote.push(n);
+      } else if (/\d/.test(v)) {
+        imeloOpisne = true;                                 // opisna/variabilna cena → preskoči, a zabeleži
+      }
+    }
+    if (!vsote.length) return { display: '', znesek: 0, imeloOpisne };
     const skupaj = vsote.reduce((a, b) => a + b, 0);
-    return { display: formatEur(skupaj), znesek: skupaj };
+    return { display: formatEur(skupaj), znesek: skupaj, imeloOpisne };
   };
 
   const skupajVzp = sestej(podatki.storitve.map(s => s.vzpostavitev));
   const skupajMes = sestej(podatki.storitve.map(s => s.mesecno));
 
   podatki.SKUPAJ_VZPOSTAVITEV = skupajVzp.display;
-  podatki.SKUPAJ_MESECNO = skupajMes.display ? skupajMes.display.replace(' €', ' €/mes.') : '';
 
-  // DDV info pod SKUPAJ pasom (22 %)
+  // Če so bile med mesečnimi tudi opisne cene (preskočene), je vsota le spodnja meja → "od ..."
+  let mesDisplay = skupajMes.display ? skupajMes.display.replace(' €', ' €/mes.') : '';
+  if (mesDisplay && skupajMes.imeloOpisne) mesDisplay = 'od ' + mesDisplay;
+  podatki.SKUPAJ_MESECNO = mesDisplay;
+
+  // DDV info pod SKUPAJ pasom (22 %) — DDV se računa samo od fiksnih (seštetih) zneskov
   const skupajZnesek = skupajVzp.znesek + skupajMes.znesek;
+  let ddvInfo = '';
   if (skupajZnesek > 0) {
     const ddv = skupajZnesek * 0.22;
     const zDdv = skupajZnesek + ddv;
-    podatki.SKUPAJ_DDV_INFO = `DDV (22 %): ${formatEur(ddv)} · Z DDV: ${formatEur(zDdv)}`;
-  } else {
-    podatki.SKUPAJ_DDV_INFO = '';
+    ddvInfo = `DDV (22 %): ${formatEur(ddv)} · Z DDV: ${formatEur(zDdv)}`;
   }
+  // Opozorilo, da niso vsi mesečni stroški všteti (variabilni/opcijski)
+  if (skupajMes.imeloOpisne) {
+    ddvInfo += (ddvInfo ? ' · ' : '') + '+ variabilni in opcijski stroški (glej opombe)';
+  }
+  podatki.SKUPAJ_DDV_INFO = ddvInfo;
 
   // ── FAZNI BLOK (samo za projektne storitve s poljem "faze") ────
   let fazniBlok = '';
@@ -119,10 +165,16 @@ if (Array.isArray(podatki.storitve)) {
     fazniBlokWord += `<p style="font-size:12pt;font-weight:bold;color:#0B0F10;margin:18px 0 8px 0;">${s.naziv || ''}</p>`;
 
     s.faze.forEach(faza => {
-      const nalogeVrstice = (faza.naloge || []).map(n => `
+      const naloge = faza.naloge || [];
+      // Stolpec "Ur" prikažemo SAMO, če faza dejansko ima ure. Če jih je človek
+      // v popravljenem Wordu odstranil, jih izpustimo tudi tu (zvestoba dokumentu).
+      const imaUre = naloge.some(n => n.ure && String(n.ure).trim());
+      const stolpcev = imaUre ? 3 : 2;
+
+      const nalogeVrstice = naloge.map(n => `
         <tr>
           <td>${n.opis || ''}</td>
-          <td>${n.ure || ''}</td>
+          ${imaUre ? `<td>${n.ure || ''}</td>` : ''}
           <td>${n.vrednost || ''}</td>
         </tr>`).join('');
 
@@ -134,41 +186,41 @@ if (Array.isArray(podatki.storitve)) {
           </div>
           <table class="faze-tabela">
             <thead>
-              <tr><th>Naloga</th><th>Ur</th><th>Vrednost</th></tr>
+              <tr><th>Naloga</th>${imaUre ? '<th>Ur</th>' : ''}<th>Vrednost</th></tr>
             </thead>
             <tbody>${nalogeVrstice}</tbody>
             <tfoot>
               <tr class="faza-skupaj">
                 <td>Skupaj faza</td>
-                <td>${faza.skupaj_ure || ''}</td>
+                ${imaUre ? `<td>${faza.skupaj_ure || ''}</td>` : ''}
                 <td>${faza.skupaj_vrednost || ''}</td>
               </tr>
             </tfoot>
           </table>
         </div>`;
 
-      const nalogeWord = (faza.naloge || []).map(n => `
+      const nalogeWord = naloge.map(n => `
         <tr>
           <td style="padding:5px 12px;border-bottom:1px solid #f1f3f5;font-size:9.5pt;color:#333;">${n.opis || ''}</td>
-          <td style="padding:5px 12px;border-bottom:1px solid #f1f3f5;font-size:9.5pt;color:#333;text-align:right;white-space:nowrap;">${n.ure || ''}</td>
+          ${imaUre ? `<td style="padding:5px 12px;border-bottom:1px solid #f1f3f5;font-size:9.5pt;color:#333;text-align:right;white-space:nowrap;">${n.ure || ''}</td>` : ''}
           <td style="padding:5px 12px;border-bottom:1px solid #f1f3f5;font-size:9.5pt;color:#333;text-align:right;white-space:nowrap;">${n.vrednost || ''}</td>
         </tr>`).join('');
 
       fazniBlokWord += `
         <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-bottom:14px;border:1px solid #dde3e6;border-left:4px solid #00AFAA;">
-          <tr><td colspan="3" style="padding:10px 14px;background:#f7f9fa;">
+          <tr><td colspan="${stolpcev}" style="padding:10px 14px;background:#f7f9fa;">
             <p style="margin:0;font-weight:bold;font-size:11pt;color:#0B0F10;">${faza.naslov || ''}</p>
             ${faza.trajanje ? `<p style="margin:2px 0 0 0;font-size:9pt;color:#888;font-style:italic;">Trajanje: ${faza.trajanje}</p>` : ''}
           </td></tr>
           <tr style="background:#fafbfc;">
             <th style="padding:7px 12px;text-align:left;font-size:8.5pt;color:#666;text-transform:uppercase;border-bottom:1px solid #dde3e6;">Naloga</th>
-            <th style="padding:7px 12px;text-align:right;font-size:8.5pt;color:#666;text-transform:uppercase;border-bottom:1px solid #dde3e6;width:60px;">Ur</th>
+            ${imaUre ? '<th style="padding:7px 12px;text-align:right;font-size:8.5pt;color:#666;text-transform:uppercase;border-bottom:1px solid #dde3e6;width:60px;">Ur</th>' : ''}
             <th style="padding:7px 12px;text-align:right;font-size:8.5pt;color:#666;text-transform:uppercase;border-bottom:1px solid #dde3e6;width:90px;">Vrednost</th>
           </tr>
           ${nalogeWord}
           <tr style="background:#0B0F10;color:#fff;">
             <td style="padding:8px 14px;font-weight:bold;font-size:10pt;color:#fff;">Skupaj faza</td>
-            <td style="padding:8px 14px;font-weight:bold;font-size:10pt;color:#fff;text-align:right;">${faza.skupaj_ure || ''}</td>
+            ${imaUre ? `<td style="padding:8px 14px;font-weight:bold;font-size:10pt;color:#fff;text-align:right;">${faza.skupaj_ure || ''}</td>` : ''}
             <td style="padding:8px 14px;font-weight:bold;font-size:10pt;color:#fff;text-align:right;">${faza.skupaj_vrednost || ''}</td>
           </tr>
         </table>`;
@@ -179,12 +231,83 @@ if (Array.isArray(podatki.storitve)) {
   podatki.FAZNI_BLOK_HTML_WORD = fazniBlokWord;
 }
 
-if (podatki.DATUM === undefined || podatki.DATUM === null) {
+// ── DODATNA OPCIJA (neobvezen prosti blok v cenovni strukturi) ───
+// Vir: prosta vsebina iz Worda (npr. "Dodatna opcija — Mesečni pregled").
+// Vedno nastavimo vrednost (prazen niz), da placeholder ne ostane v PDF-ju.
+const dop = podatki.dodatna_opcija;
+if (dop && (dop.uvod || (Array.isArray(dop.tocke) && dop.tocke.length))) {
+  const tocke = (dop.tocke || []).map(t => `<li>${t}</li>`).join('');
+  const investicijaArr = Array.isArray(dop.investicija)
+    ? dop.investicija
+    : (dop.investicija ? [dop.investicija] : []);
+  const investicija = investicijaArr.map(i => `<div class="dop-inv-row">${i}</div>`).join('');
+  podatki.DODATNA_OPCIJA_HTML = `
+  <div class="dodatna-opcija">
+    <div class="dop-naslov">${dop.naslov || 'Dodatna opcija'}</div>
+    ${dop.uvod ? `<p class="dop-uvod">${dop.uvod}</p>` : ''}
+    ${tocke ? `<ul class="dop-list">${tocke}</ul>` : ''}
+    ${investicija ? `<div class="dop-investicija"><span class="dop-inv-label">Investicija</span>${investicija}</div>` : ''}
+  </div>`;
+} else {
+  podatki.DODATNA_OPCIJA_HTML = '';
+}
+
+// Če datum ni naveden (prazen niz, null ali undefined), uporabi
+// dejanski datum ob generiranju ponudbe — to je realni datum izdaje.
+if (!podatki.DATUM) {
   podatki.DATUM = new Date().toLocaleDateString('sl-SI');
 }
 if (!podatki.STEVILKA_PONUDBE) podatki.STEVILKA_PONUDBE = `P${Date.now().toString().slice(-6)}`;
 
-// Fallback naslovi za korake (stari JSONi brez NASLOV_KORAK polj)
+// ── RAZDELEK 4 "Kako poteka sodelovanje" — DINAMIČNO ─────────────
+// Prej je PDF predloga vedno izrisala 4 trdo zakodirane korake, render.js pa
+// je praznim vsilil privzete naslove. Na verbatim poti (naložen popravljen
+// Word) je to DODAJALO izmišljene korake. Zdaj izrišemo TOČNO toliko korakov,
+// kot jih ima ponudba — prazne izpustimo, če korakov ni, izpustimo cel razdelek.
+// Beremo SUROVE vrednosti tu, PREDEN spodaj nastavimo fallback naslove (ti
+// zdaj služijo le Word predlogi, ki ostane pri 4 korakih).
+const privzetiKorakNaslov = ['Vzpostavitev', 'Optimizacija', 'Poročanje', 'Razvoj'];
+const koraki = [];
+for (let i = 1; i <= 4; i++) {
+  const naslov = (podatki[`NASLOV_KORAK_${i}`] || '').trim();
+  const opis   = (podatki[`KORAK_${i}`] || '').trim();
+  if (!naslov && !opis) continue; // prazen korak → izpusti (nič izmišljenega)
+  koraki.push({ naslov: naslov || privzetiKorakNaslov[i - 1], opis });
+}
+
+if (koraki.length) {
+  const korakStep = (k, n) => `
+        <div class="process-step">
+          <div class="step-circle">${n}</div>
+          <div class="step-content">
+            <div class="step-label">Korak ${n}</div>
+            <div class="step-title">${k.naslov}</div>
+            <div class="step-desc">${k.opis}</div>
+          </div>
+        </div>`;
+  let vrstice = '';
+  for (let i = 0; i < koraki.length; i += 2) {
+    const a = korakStep(koraki[i], i + 1);
+    const b = koraki[i + 1] ? korakStep(koraki[i + 1], i + 2) : '';
+    vrstice += `\n      <div class="process-row">${a}${b}
+      </div>`;
+  }
+  podatki.RAZDELEK_KORAKI = `
+  <div class="section">
+    <div class="section-header">
+      <div class="section-number">4</div>
+      <h2 class="section-title">KAKO POTEKA <span class="accent">SODELOVANJE?</span></h2>
+    </div>
+    <div class="process-grid">${vrstice}
+    </div>
+  </div>`;
+  podatki.ST_RAZDELEK_PODJETJE = '5';
+} else {
+  podatki.RAZDELEK_KORAKI = '';
+  podatki.ST_RAZDELEK_PODJETJE = '4'; // razdelek korakov izpadel → preštevilči
+}
+
+// Fallback naslovi za korake (stari JSONi brez NASLOV_KORAK polj) — samo Word
 if (!podatki.NASLOV_KORAK_1) podatki.NASLOV_KORAK_1 = 'Vzpostavitev';
 if (!podatki.NASLOV_KORAK_2) podatki.NASLOV_KORAK_2 = 'Optimizacija';
 if (!podatki.NASLOV_KORAK_3) podatki.NASLOV_KORAK_3 = 'Poročanje';
