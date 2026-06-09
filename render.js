@@ -248,8 +248,32 @@ if (dop && (dop.uvod || (Array.isArray(dop.tocke) && dop.tocke.length))) {
     ${tocke ? `<ul class="dop-list">${tocke}</ul>` : ''}
     ${investicija ? `<div class="dop-investicija"><span class="dop-inv-label">Investicija</span>${investicija}</div>` : ''}
   </div>`;
+
+  // Word verzija (inline stili za html-to-docx). Naslov ima predpono "DODATNO:",
+  // da ga verbatim parser (mammoth → Claude) ob ponovnem nalaganju spet prepozna
+  // kot dodatno opcijo in ne kot navadno storitev.
+  const naslovWord = (dop.naslov && /dodat/i.test(dop.naslov))
+    ? dop.naslov
+    : `DODATNO: ${dop.naslov || 'Dodatna opcija'}`;
+  // Točke kot <p> odstavki (NE gnezdena tabela — html-to-docx jo izpusti).
+  const tockeWord = (dop.tocke || [])
+    .map(t => `<p style="font-size:9.5pt;color:#444;margin:2px 0;"><span style="color:#00AFAA;font-weight:bold;">&#9679;</span> ${t}</p>`)
+    .join('');
+  const investicijaWord = investicijaArr
+    .map(i => `<p style="font-size:9.5pt;color:#0B0F10;font-weight:bold;margin:2px 0;">${i}</p>`)
+    .join('');
+  podatki.DODATNA_OPCIJA_HTML_WORD = `
+  <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin-top:14px;margin-bottom:8px;border:1px solid #dde3e6;border-left:4px solid #FF0A60;">
+    <tr><td style="padding:12px 16px;">
+      <p style="font-size:11pt;font-weight:bold;color:#0B0F10;margin:0 0 6px 0;">${naslovWord}</p>
+      ${dop.uvod ? `<p style="font-size:9.5pt;color:#555;line-height:1.6;margin:0 0 8px 0;">${dop.uvod}</p>` : ''}
+      ${tockeWord}
+      ${investicijaWord ? `<p style="font-size:8.5pt;color:#888;text-transform:uppercase;margin:8px 0 2px 0;">Investicija</p>${investicijaWord}` : ''}
+    </td></tr>
+  </table>`;
 } else {
   podatki.DODATNA_OPCIJA_HTML = '';
+  podatki.DODATNA_OPCIJA_HTML_WORD = '';
 }
 
 // Če datum ni naveden (prazen niz, null ali undefined), uporabi
