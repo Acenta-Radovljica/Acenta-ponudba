@@ -282,20 +282,29 @@ delete SDK_ENV.ANTHROPIC_API_KEY;
 const SDK_OMOGOCEN = process.env.PONUDBE_SDK === '1';
 
 async function razcleniVsebinoSDK(besedilo, sistemskiPrompt = SISTEM_PROMPT) {
+  // Varovalka: klic ne sme nikoli viseti v nedogled (sicer proxy vrne 502).
+  const ctrl = new AbortController();
+  const timeout = setTimeout(() => ctrl.abort(), 120000); // 120 s
   let finalText = '';
-  for await (const msg of query({
-    prompt: besedilo,
-    options: {
-      systemPrompt: sistemskiPrompt, // navaden prompt (ne Claude Code preset)
-      allowedTools: [],              // brez orodij — gre le za pretvorbo besedilo→JSON
-      maxTurns: 1,                   // en sam obrat
-      settingSources: [],            // ne nalagaj .claude/settings datotek
-      env: SDK_ENV,                  // brez API ključa → naročnina
-    },
-  })) {
-    if (msg.type === 'result' && msg.subtype === 'success') {
-      finalText = msg.result;
+  try {
+    for await (const msg of query({
+      prompt: besedilo,
+      options: {
+        systemPrompt: sistemskiPrompt, // navaden prompt (ne Claude Code preset)
+        allowedTools: [],              // brez orodij — gre le za pretvorbo besedilo→JSON
+        maxTurns: 1,                   // en sam obrat
+        settingSources: [],            // ne nalagaj .claude/settings datotek
+        env: SDK_ENV,                  // brez API ključa → naročnina
+        thinking: { type: 'disabled' }, // CLI privzeto vklopi razmišljanje (+50 s) → izklop = ~3x hitreje, brez proxy timeouta
+        abortController: ctrl,         // prekini po 120 s
+      },
+    })) {
+      if (msg.type === 'result' && msg.subtype === 'success') {
+        finalText = msg.result;
+      }
     }
+  } finally {
+    clearTimeout(timeout);
   }
 
   const text = finalText.trim()
