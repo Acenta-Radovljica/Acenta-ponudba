@@ -1,5 +1,6 @@
 import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
+import { query } from '@anthropic-ai/claude-agent-sdk';
 import mammoth from 'mammoth';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { resolve, dirname, basename, extname, sep } from 'path';
@@ -269,6 +270,40 @@ async function razcleniVsebino(content, sistemskiPrompt = SISTEM_PROMPT, maxToke
   return JSON.parse(text);
 }
 
+// ── Claudov klic prek Agent SDK (naročnina namesto API) ────────────
+// Agent SDK zažene `claude` podproces. Ta uporabi OAuth NAROČNINO, če v
+// okolju NI ANTHROPIC_API_KEY. `env` ZAMENJA okolje podprocesa (ne zlije),
+// zato razširimo process.env (PATH/HOME) in izbrišemo le API ključ.
+const SDK_ENV = { ...process.env };
+delete SDK_ENV.ANTHROPIC_API_KEY;
+
+// Stikalo: SDK (naročnina) se uporabi SAMO če je PONUDBE_SDK=1. Privzeto izklopljeno,
+// da produkcija ostane na API-ju, dokler ni na strežniku nastavljen naročninski žeton.
+const SDK_OMOGOCEN = process.env.PONUDBE_SDK === '1';
+
+async function razcleniVsebinoSDK(besedilo, sistemskiPrompt = SISTEM_PROMPT) {
+  let finalText = '';
+  for await (const msg of query({
+    prompt: besedilo,
+    options: {
+      systemPrompt: sistemskiPrompt, // navaden prompt (ne Claude Code preset)
+      allowedTools: [],              // brez orodij — gre le za pretvorbo besedilo→JSON
+      maxTurns: 1,                   // en sam obrat
+      settingSources: [],            // ne nalagaj .claude/settings datotek
+      env: SDK_ENV,                  // brez API ključa → naročnina
+    },
+  })) {
+    if (msg.type === 'result' && msg.subtype === 'success') {
+      finalText = msg.result;
+    }
+  }
+
+  const text = finalText.trim()
+    .replace(/^```json\n?/, '')
+    .replace(/\n?```$/, '');
+  return JSON.parse(text);
+}
+
 // ── RAZČLENI z Claude (PDF / besedilo / popravljen Word) ───────────
 app.post('/razcleni', async (req, res) => {
   try {
@@ -277,7 +312,8 @@ app.post('/razcleni', async (req, res) => {
     let vir = besedilo || '';
     let preveriDatum = Boolean(besedilo);
     let sistemskiPrompt = SISTEM_PROMPT;
-    let maxTokens = 4096;
+    let maxTokens = 8192; // dovolj za dolge ponudbe (8+ modulov) — brez rezanja izhoda
+    let promptText = null; // besedilni prompt za SDK (naročnino); ostane null pri PDF
 
     if (pdf) {
       content.push({
@@ -299,30 +335,37 @@ app.post('/razcleni', async (req, res) => {
         preveriDatum = false;
         sistemskiPrompt = VERBATIM_PROMPT;
         maxTokens = 8192; // daljše ponudbe z več fazami — brez rezanja izhoda
-        content.push({
-          type: 'text',
-          text: `To je ŽE pripravljena ponudba, ki jo je človek ročno popravil v Wordu. Spodaj je HTML, ki ohranja TOČNO strukturo dokumenta (razdelki, tabele, naloge, ure). Prepiši VSE — vsako vrstico, vsak razdelek, vsako ceno — TOČNO kot je. Če v tabeli ni stolpca/vrednosti za ure, pusti polje "ure" prazno (ne izmišljuj). Če je človek dodal nove razdelke ali besedilo, jih VKLJUČI. Vrni JSON:\n\n${html}`
-        });
+        promptText = `To je ŽE pripravljena ponudba, ki jo je človek ročno popravil v Wordu. Spodaj je HTML, ki ohranja TOČNO strukturo dokumenta (razdelki, tabele, naloge, ure). Prepiši VSE — vsako vrstico, vsak razdelek, vsako ceno — TOČNO kot je. Če v tabeli ni stolpca/vrednosti za ure, pusti polje "ure" prazno (ne izmišljuj). Če je človek dodal nove razdelke ali besedilo, jih VKLJUČI. Vrni JSON:\n\n${html}`;
+        content.push({ type: 'text', text: promptText });
       } else {
         // Word kot vir/brief: zadošča surovo besedilo (cene po ceniku)
         const { value: tekst } = await mammoth.extractRawText({ buffer });
         vir = tekst;
         preveriDatum = true;
-        content.push({
-          type: 'text',
-          text: `Razčleni naslednje besedilo in vrni JSON:\n\n${tekst}`
-        });
+        promptText = `Razčleni naslednje besedilo in vrni JSON:\n\n${tekst}`;
+        content.push({ type: 'text', text: promptText });
       }
+    } else if (!pdf) {
+      promptText = `Razčleni naslednje besedilo in vrni JSON:\n\n${besedilo}`;
+      content.push({ type: 'text', text: promptText });
     } else {
-      content.push({
-        type: 'text',
-        text: besedilo
-          ? `Razčleni naslednje besedilo in vrni JSON:\n\n${besedilo}`
-          : 'Razčleni priloženi PDF in vrni JSON.'
-      });
+      content.push({ type: 'text', text: 'Razčleni priloženi PDF in vrni JSON.' });
     }
 
-    const surovi = await razcleniVsebino(content, sistemskiPrompt, maxTokens);
+    // PDF gre prek Anthropic API (document blok ni možen v SDK string promptu).
+    // docx/besedilo gresta prek Agent SDK (naročnina) SAMO če je PONUDBE_SDK=1;
+    // sicer (privzeto) prek API. Ob napaki SDK fallback na API.
+    let surovi;
+    if (promptText && SDK_OMOGOCEN) {
+      try {
+        surovi = await razcleniVsebinoSDK(promptText, sistemskiPrompt);
+      } catch (e) {
+        console.warn('SDK (naročnina) ni uspel, fallback na API:', e.message);
+        surovi = await razcleniVsebino(content, sistemskiPrompt, maxTokens);
+      }
+    } else {
+      surovi = await razcleniVsebino(content, sistemskiPrompt, maxTokens);
+    }
     const podatki = normalizirajPonudbo(surovi, { vir, preveriDatum });
 
     res.json({ ok: true, podatki: podatki.data, opozorila: podatki.opozorila });

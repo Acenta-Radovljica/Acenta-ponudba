@@ -164,6 +164,44 @@
   /* NAPAKA */
   .napaka { background: #fff0f4; border: 1px solid var(--accent); border-radius: 8px; padding: 14px 18px; color: var(--accent); font-size: 13px; margin-top: 12px; }
 
+  /* DOC EDITOR (korak 3) — neposredno urejanje besedila in tabel */
+  .doc-hint { font-size: 12px; color: var(--gray); background: #f0fefe; border: 1px solid var(--teal); border-radius: 6px; padding: 10px 14px; margin-bottom: 18px; }
+  .doc { border: 1px solid var(--border); border-radius: 8px; padding: 32px 36px; background: #fff; line-height: 1.6; font-size: 13px; color: #222; }
+  .doc h1.doc-naslov { font-size: 24px; font-weight: 800; color: var(--dark); margin: 6px 0; letter-spacing: -0.5px; }
+  .doc .doc-podnaslov { font-size: 14px; color: var(--gray); margin-bottom: 18px; }
+  .doc .doc-meta { font-size: 12px; color: #444; margin: 2px 0; }
+  .doc .doc-meta-label { color: #888; }
+  .doc .doc-badge { display: inline-block; background: var(--teal); color: #fff; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; padding: 3px 10px; border-radius: 4px; margin-bottom: 10px; }
+  .doc .doc-sec { font-size: 11px; font-weight: 800; color: var(--teal); text-transform: uppercase; letter-spacing: 1px; margin: 28px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .doc .doc-card { border: 1px solid var(--border); border-left: 4px solid var(--teal); border-radius: 6px; padding: 14px 16px; margin-bottom: 12px; }
+  .doc .doc-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .doc .doc-card-naziv { font-size: 14px; font-weight: 700; color: var(--dark); }
+  .doc .doc-card-pod { font-size: 11px; font-style: italic; color: var(--gray); margin-bottom: 6px; }
+  .doc p.doc-opis { margin: 4px 0; color: #444; display: flex; align-items: flex-start; gap: 6px; }
+  .doc ul.doc-list { list-style: none; padding: 0; margin: 6px 0; }
+  .doc ul.doc-list li { display: flex; align-items: flex-start; gap: 8px; padding: 2px 0; }
+  .doc ul.doc-list li:before { content: "\\25CF"; color: var(--teal); font-size: 9px; line-height: 1.9; }
+  .doc ul.doc-list li > span[contenteditable] { flex: 1; }
+  .doc table.doc-table { width: 100%; border-collapse: collapse; margin: 8px 0 4px; font-size: 12px; }
+  .doc table.doc-table th { background: #f7f9fa; text-align: left; padding: 7px 10px; border: 1px solid var(--border); font-size: 10px; text-transform: uppercase; color: #666; }
+  .doc table.doc-table td { padding: 7px 10px; border: 1px solid var(--border); vertical-align: top; }
+  .doc table.doc-table td.num, .doc table.doc-table th.num { text-align: right; white-space: nowrap; }
+  .doc table.doc-table tfoot td { font-weight: 700; background: #f3f5f6; }
+  .doc table.doc-table td.x-cell { border: none; background: none; padding: 4px; width: 28px; text-align: center; }
+  .doc .doc-faza-naslov { font-weight: 700; color: var(--dark); margin-top: 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .doc .doc-faza-trajanje { font-size: 11px; font-style: italic; color: var(--gray); }
+  .doc .doc-total-note { font-size: 11px; color: var(--gray); font-style: italic; margin-top: 4px; }
+  .doc .doc-readonly { background: #f3f5f6; color: #888; }
+  .doc [contenteditable] { outline: none; border-radius: 3px; padding: 0 2px; transition: background .1s, box-shadow .1s; min-width: 8px; white-space: pre-wrap; }
+  .doc [contenteditable]:hover { background: #eafaf9; }
+  .doc [contenteditable]:focus { background: #fff; box-shadow: 0 0 0 2px var(--teal); }
+  .doc [contenteditable]:empty:before { content: attr(data-ph); color: #c2c8cc; }
+  .doc-mini { background: none; border: 1px dashed var(--border); border-radius: 5px; cursor: pointer; font-size: 11px; color: var(--gray); padding: 4px 10px; margin-top: 6px; }
+  .doc-mini:hover { border-color: var(--teal); color: var(--teal); }
+  .doc-x { background: none; border: none; cursor: pointer; color: var(--accent); font-size: 15px; line-height: 1; padding: 0 4px; }
+  .doc-dodatna { border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 6px; padding: 14px 16px; margin-top: 12px; }
+  .doc-dodatna .doc-card-naziv { color: var(--accent); }
+
   .hidden { display: none !important; }
 </style>
 </head>
@@ -392,46 +430,27 @@
       <div id="forma-napaka" class="napaka hidden" style="margin-top:16px;"></div>
 
       <div class="actions" style="margin-top:28px;">
-        <button class="btn btn-primary" onclick="generiraiWord()" id="btn-word">
-          ⬇ Generiraj Word
+        <button class="btn btn-primary" onclick="naprejNaDokument()" id="btn-naprej">
+          Naprej → Dokument
         </button>
         <button class="btn btn-outline" onclick="nazajNaVnos()">← Nazaj</button>
       </div>
     </div>
   </div>
 
-  <!-- KORAK 3: DOKUMENT -->
+  <!-- KORAK 3: DOKUMENT (vgrajen urejevalnik) -->
   <div id="step-dokument" class="hidden">
     <div class="card">
-      <div class="card-title">Dokument</div>
+      <div class="card-title">Dokument <span>—</span> uredi neposredno</div>
 
-      <div id="word-box" class="download-box hidden">
-        <div class="download-icon">📝</div>
-        <div class="download-info">
-          <div class="download-label">Word osnutek</div>
-          <div class="download-name" id="word-filename"></div>
-        </div>
-        <a id="word-link" href="#" class="btn btn-outline" download>Prenesi</a>
+      <div class="doc-hint">
+        Klikni na katerokoli besedilo ali celico v tabeli in jo uredi.
+        Skupne cene (Skupaj, DDV) se samodejno izračunajo ob izvozu v PDF.
       </div>
 
-      <!-- NALOŽI POPRAVLJEN WORD -->
-      <div class="upload-area" id="word-upload-area" style="padding:24px;margin-bottom:16px;"
-        onclick="document.getElementById('word-file-input').click()"
-        ondragover="event.preventDefault();this.classList.add('drag')"
-        ondragleave="this.classList.remove('drag')"
-        ondrop="handleWordDrop(event)">
-        <div class="upload-icon">📤</div>
-        <div>Si popravil Word? Naloži ga sem za posodobitev vsebine</div>
-        <div id="word-upload-filename" class="upload-filename hidden"></div>
-      </div>
-      <input type="file" id="word-file-input" accept=".docx" style="display:none" onchange="handleWordUpload(this.files[0])">
+      <div id="doc" class="doc"></div>
 
-      <div id="word-upload-loading" class="hidden" style="text-align:center;padding:20px 0;">
-        <div class="spinner"></div>
-        <div class="loading-text">Berem Word in generiram PDF...</div>
-      </div>
-
-      <div id="pdf-box" class="download-box hidden" style="border-color:#1a7a4a;background:#f0fdf4;">
+      <div id="pdf-box" class="download-box hidden" style="border-color:#1a7a4a;background:#f0fdf4;margin-top:16px;">
         <div class="download-icon">📕</div>
         <div class="download-info">
           <div class="download-label">PDF</div>
@@ -446,11 +465,11 @@
         <div class="loading-text">Generiram PDF...</div>
       </div>
 
-      <div class="actions">
+      <div class="actions" style="margin-top:20px;">
         <button class="btn btn-primary" id="btn-pdf" onclick="generiraiPdf()">
-          ✓ Potrdi → Generiraj PDF
+          ✓ Generiraj PDF
         </button>
-        <button class="btn btn-outline" onclick="nazajNaFormo()">← Uredi</button>
+        <button class="btn btn-outline" onclick="nazajNaFormo()">← Uredi v formi</button>
         <button class="btn btn-outline" onclick="resetiraj()">↺ Nova ponudba</button>
       </div>
     </div>
@@ -462,6 +481,7 @@
 let aktivniTab = 'pdf';
 let nalozenaDatoteka = null;   // { vrsta: 'pdf'|'docx'|'txt', vsebina }
 let storitevIndex = 0;
+let stanje = {};               // kanonični objekt ponudbe — edini vir resnice za dokument
 
 // ── TABS ──────────────────────────────────────────────────────────
 function switchTab(tab) {
@@ -538,6 +558,7 @@ async function razcleni() {
   try {
     const res = await post('/razcleni', body);
     if (!res.ok) throw new Error(res.napaka);
+    stanje = res.podatki || {};
     zapolniFormo(res.podatki);
     show('step-loading', false);
     show('step-forma', true);
@@ -653,33 +674,273 @@ function dodajStoritevZPodatki(s = {}) {
 
 function dodajStoritev() { dodajStoritevZPodatki(); }
 
-// ── WORD ──────────────────────────────────────────────────────────
-async function generiraiWord() {
-  const napaka = document.getElementById('forma-napaka');
-  napaka.classList.add('hidden');
-  const btn = document.getElementById('btn-word');
-  btn.disabled = true;
-  btn.textContent = 'Generiram...';
+// ── DOKUMENT (vgrajen urejevalnik) ────────────────────────────────
+// Pot-osnovan dostop do gnezdenih polj v `stanje` (npr. "storitve.0.faze.1.naloge.2.opis").
+function getByPath(obj, path) {
+  return path.split('.').reduce((o, k) => (o == null ? o : o[k]), obj);
+}
+function setByPath(obj, path, val) {
+  const keys = path.split('.');
+  let o = obj;
+  for (let i = 0; i < keys.length - 1; i++) {
+    const k = keys[i];
+    if (o[k] == null) o[k] = /^\d+$/.test(keys[i + 1]) ? [] : {};
+    o = o[k];
+  }
+  o[keys[keys.length - 1]] = val;
+}
 
-  try {
-    const podatki = zberiForme();
-    const res = await post('/generiraj-word', podatki);
-    if (!res.ok) throw new Error(res.napaka);
+// Forma (korak 2) → stanje. Ohrani polja, ki jih forma ne ureja (opis, obseg, dodatna_opcija).
+function sinhronizirajFormoVStanje() {
+  const f = zberiForme();
+  const stareStoritve = stanje.storitve || [];
+  Object.keys(f).forEach(k => { if (k !== 'storitve') stanje[k] = f[k]; });
+  stanje.storitve = (f.storitve || []).map((s, i) => {
+    const stara = stareStoritve[i] || {};
+    return { ...s, opis: stara.opis, obseg: stara.obseg };
+  });
+}
 
-    document.getElementById('word-filename').textContent = res.datoteka;
-    document.getElementById('word-link').href = '/prenesi/word/' + res.datoteka;
+// Preberi vsa urljiva polja iz DOM nazaj v stanje (pred vsako strukturno spremembo / izvozom).
+function flushEdits() {
+  document.querySelectorAll('#doc [data-bind]').forEach(el => {
+    setByPath(stanje, el.getAttribute('data-bind'), el.innerText.replace(/\u00a0/g, ' ').trim());
+  });
+}
 
-    show('step-forma', false);
-    show('step-dokument', true);
-    document.getElementById('word-box').classList.remove('hidden');
-    setStepActive(3);
-  } catch (err) {
-    prikaziNapako(napaka, 'Napaka: ' + err.message);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '⬇ Generiraj Word';
+// Odstrani prazne vnose pred izvozom v PDF (prazni odstavki/točke/naloge/faze).
+function pociistiStanje() {
+  (stanje.storitve || []).forEach(s => {
+    if (Array.isArray(s.opis)) s.opis = s.opis.filter(p => p && p.trim());
+    if (Array.isArray(s.tocke)) s.tocke = s.tocke.filter(t => t && t.trim());
+    if (Array.isArray(s.faze)) {
+      s.faze.forEach(faza => {
+        if (Array.isArray(faza.naloge)) {
+          faza.naloge = faza.naloge.filter(n => (n.opis && n.opis.trim()) || (n.vrednost && n.vrednost.trim()) || (n.ure && String(n.ure).trim()));
+        }
+      });
+    }
+  });
+  const dop = stanje.dodatna_opcija;
+  if (dop) {
+    if (Array.isArray(dop.tocke)) dop.tocke = dop.tocke.filter(t => t && t.trim());
+    if (Array.isArray(dop.investicija)) dop.investicija = dop.investicija.filter(i => i && i.trim());
   }
 }
+
+function naprejNaDokument() {
+  document.getElementById('forma-napaka').classList.add('hidden');
+  sinhronizirajFormoVStanje();
+  renderDoc();
+  show('step-forma', false);
+  show('step-dokument', true);
+  document.getElementById('btn-pdf').classList.remove('hidden');
+  document.getElementById('pdf-box').classList.add('hidden');
+  setStepActive(3);
+}
+
+// Urljivo polje (inline). El = 'span' (enovrstično) ali 'div'/'td' postavimo posebej.
+function ed(path, val, ph = '') {
+  return `<span contenteditable data-bind="${esc(path)}" data-ph="${esc(ph)}">${esc(val || '')}</span>`;
+}
+
+// ── renderDoc: izriše celoten dokument iz `stanje` ───────────────
+function renderDoc() {
+  const p = stanje;
+  const storitve = p.storitve || [];
+  let h = '';
+
+  // — Glava / meta —
+  h += `<div class="doc-badge" contenteditable data-bind="STORITEV_BADGE" data-ph="OZNAKA">${esc(p.STORITEV_BADGE || '')}</div>`;
+  h += `<div class="doc-meta"><span class="doc-meta-label">Datum:</span> ${ed('DATUM', p.DATUM, 'samodejno')}
+        &nbsp;·&nbsp; <span class="doc-meta-label">Ponudba:</span> ${ed('STEVILKA_PONUDBE', p.STEVILKA_PONUDBE, 'samodejno')}</div>`;
+  h += `<div class="doc-meta"><span class="doc-meta-label">Stranka:</span> ${ed('IME_STRANKE', p.IME_STRANKE, 'Ime podjetja')}</div>`;
+  h += `<div class="doc-meta"><span class="doc-meta-label">Naslov:</span> ${ed('NASLOV_STRANKE', p.NASLOV_STRANKE, '—')}
+        &nbsp;·&nbsp; <span class="doc-meta-label">Kontakt:</span> ${ed('KONTAKTNA_OSEBA', p.KONTAKTNA_OSEBA, '—')}
+        &nbsp;·&nbsp; <span class="doc-meta-label">Tel:</span> ${ed('TELEFON_STRANKE', p.TELEFON_STRANKE, '—')}</div>`;
+  h += `<div class="doc-meta">${ed('DODATNI_META', p.DODATNI_META, 'dodatni opis (neobvezno)')}</div>`;
+  h += `<h1 class="doc-naslov" contenteditable data-bind="NASLOV" data-ph="Naslov ponudbe">${esc(p.NASLOV || '')}</h1>`;
+  h += `<div class="doc-podnaslov" contenteditable data-bind="PODNASLOV" data-ph="Podnaslov">${esc(p.PODNASLOV || '')}</div>`;
+
+  // — Zakaj ta storitev —
+  h += `<div class="doc-sec">Zakaj ta storitev?</div>`;
+  h += `<p contenteditable data-bind="UVODNI_ODSTAVEK" data-ph="Uvodni odstavek...">${esc(p.UVODNI_ODSTAVEK || '')}</p>`;
+
+  // — Kaj vključuje ponudba (kartice) —
+  h += `<div class="doc-sec">Kaj vključuje ponudba?</div>`;
+  storitve.forEach((s, i) => {
+    h += `<div class="doc-card">
+      <div class="doc-card-head">
+        <div style="flex:1;">
+          <div class="doc-card-naziv" contenteditable data-bind="storitve.${i}.naziv" data-ph="Naziv storitve">${esc(s.naziv || '')}</div>
+          <div class="doc-card-pod" contenteditable data-bind="storitve.${i}.podnaslov" data-ph="šifra | opis">${esc(s.podnaslov || '')}</div>
+        </div>
+        <button class="doc-x" title="Odstrani storitev" onclick="docOdstraniStoritev(${i})">×</button>
+      </div>`;
+    // opis odstavki
+    const opisArr = Array.isArray(s.opis) ? s.opis : (s.opis ? [s.opis] : []);
+    opisArr.forEach((o, j) => {
+      h += `<p class="doc-opis">${ed(`storitve.${i}.opis.${j}`, o, 'opisni odstavek')}
+        <button class="doc-x" title="Odstrani odstavek" onclick="docOdstraniOpis(${i},${j})">×</button></p>`;
+    });
+    h += `<button class="doc-mini" onclick="docDodajOpis(${i})">+ odstavek</button>`;
+    // točke
+    h += `<ul class="doc-list">`;
+    (s.tocke || []).forEach((t, j) => {
+      h += `<li>${ed(`storitve.${i}.tocke.${j}`, t, 'točka')}
+        <button class="doc-x" title="Odstrani točko" onclick="docOdstraniTocko(${i},${j})">×</button></li>`;
+    });
+    h += `</ul><button class="doc-mini" onclick="docDodajTocko(${i})">+ točka</button>`;
+    // obseg (read-only pass-through, da se ne izgubi)
+    if (s.obseg && Array.isArray(s.obseg.skupine) && s.obseg.skupine.length) {
+      const stStock = s.obseg.skupine.reduce((a, g) => a + ((g.tocke || []).length), 0);
+      h += `<div class="doc-total-note">Obseg "${esc(s.obseg.naslov || '')}" (${s.obseg.skupine.length} skupin, ${stStock} točk) — ohranjen, viden v PDF (urejanje obsega v tej različici ni na voljo).</div>`;
+    }
+    h += `</div>`;
+  });
+  h += `<button class="doc-mini" onclick="docDodajStoritev()">+ Dodaj storitev</button>`;
+
+  // — Cenovna struktura —
+  h += `<div class="doc-sec">Cenovna struktura</div>`;
+
+  // fazne tabele
+  storitve.forEach((s, i) => {
+    if (!Array.isArray(s.faze) || !s.faze.length) return;
+    h += `<div class="doc-faza-naslov"><span>${esc(s.naziv || '')}</span></div>`;
+    s.faze.forEach((faza, fi) => {
+      h += `<div class="doc-faza-naslov">
+        ${ed(`storitve.${i}.faze.${fi}.naslov`, faza.naslov, 'Naslov faze')}
+        <span style="display:flex;align-items:center;gap:8px;">
+          <span class="doc-faza-trajanje">Trajanje: ${ed(`storitve.${i}.faze.${fi}.trajanje`, faza.trajanje, '—')}</span>
+          <button class="doc-x" title="Odstrani fazo" onclick="docOdstraniFazo(${i},${fi})">×</button>
+        </span>
+      </div>`;
+      h += `<table class="doc-table">
+        <thead><tr><th>Naloga</th><th class="num">Ur</th><th class="num">Vrednost</th><th class="x-cell"></th></tr></thead>
+        <tbody>`;
+      (faza.naloge || []).forEach((n, ni) => {
+        h += `<tr>
+          <td>${ed(`storitve.${i}.faze.${fi}.naloge.${ni}.opis`, n.opis, 'opis naloge')}</td>
+          <td class="num">${ed(`storitve.${i}.faze.${fi}.naloge.${ni}.ure`, n.ure, '—')}</td>
+          <td class="num">${ed(`storitve.${i}.faze.${fi}.naloge.${ni}.vrednost`, n.vrednost, '—')}</td>
+          <td class="x-cell"><button class="doc-x" title="Odstrani nalogo" onclick="docOdstraniNalogo(${i},${fi},${ni})">×</button></td>
+        </tr>`;
+      });
+      h += `</tbody>
+        <tfoot><tr>
+          <td>Skupaj faza</td>
+          <td class="num">${ed(`storitve.${i}.faze.${fi}.skupaj_ure`, faza.skupaj_ure, '—')}</td>
+          <td class="num">${ed(`storitve.${i}.faze.${fi}.skupaj_vrednost`, faza.skupaj_vrednost, '—')}</td>
+          <td class="x-cell"></td>
+        </tr></tfoot>
+      </table>
+      <button class="doc-mini" onclick="docDodajNalogo(${i},${fi})">+ naloga</button>`;
+    });
+    h += `<button class="doc-mini" onclick="docDodajFazo(${i})">+ faza (${esc(s.naziv || '')})</button>`;
+  });
+
+  // cenovna tabela (vrstice = storitve)
+  h += `<table class="doc-table">
+    <thead><tr><th>Storitev</th><th class="num">Vzpostavitev</th><th class="num">Mesečno</th><th>Opomba</th></tr></thead>
+    <tbody>`;
+  storitve.forEach((s, i) => {
+    h += `<tr>
+      <td>${esc(s.naziv || '')}</td>
+      <td class="num">${ed(`storitve.${i}.vzpostavitev`, s.vzpostavitev, '—')}</td>
+      <td class="num">${ed(`storitve.${i}.mesecno`, s.mesecno, '—')}</td>
+      <td>${ed(`storitve.${i}.opomba`, s.opomba, '—')}</td>
+    </tr>`;
+  });
+  h += `</tbody>
+    <tfoot><tr class="doc-readonly">
+      <td>Skupaj</td><td class="num">izračun ob PDF</td><td class="num">izračun ob PDF</td><td>DDV se doda samodejno</td>
+    </tr></tfoot>
+  </table>
+  <div class="doc-total-note">Skupne vrednosti in DDV (22 %) se izračunajo samodejno iz cen storitev ob izvozu v PDF.</div>`;
+
+  // — Dodatna opcija —
+  h += `<div class="doc-sec">Dodatna opcija</div>`;
+  h += renderDodatna(p.dodatna_opcija);
+
+  // — Pogoji —
+  h += `<div class="doc-sec">Pogoji</div>`;
+  h += `<p><strong>Predpostavke:</strong> ${ed('PREDPOSTAVKE', p.PREDPOSTAVKE, '—')}</p>`;
+  h += `<p><strong>V ceno ni zajeto:</strong> ${ed('IZKLUCITVE', p.IZKLUCITVE, '—')}</p>`;
+  h += `<p><strong>Plačilni pogoji:</strong> ${ed('PLACILNI_POGOJI', p.PLACILNI_POGOJI, 'Po dogovoru.')}</p>`;
+  h += `<p><strong>Veljavnost:</strong> ${ed('VELJAVNOST_PONUDBE', p.VELJAVNOST_PONUDBE, '30 dni')}</p>`;
+
+  // — Kako poteka sodelovanje —
+  h += `<div class="doc-sec">Kako poteka sodelovanje?</div>`;
+  for (let k = 1; k <= 4; k++) {
+    h += `<div style="margin-bottom:8px;">
+      <div class="doc-card-naziv">Korak ${k}: ${ed('NASLOV_KORAK_' + k, p['NASLOV_KORAK_' + k], '(prazen korak se izpusti)')}</div>
+      <p>${ed('KORAK_' + k, p['KORAK_' + k], 'opis koraka (neobvezno)')}</p>
+    </div>`;
+  }
+
+  // — Komercialist —
+  h += `<div class="doc-sec">Komercialist</div>`;
+  h += `<div class="doc-meta">${ed('IME_KOMERCIALISTA', p.IME_KOMERCIALISTA, 'Ime')} ·
+        ${ed('NAZIV_KOMERCIALISTA', p.NAZIV_KOMERCIALISTA, 'Naziv')}</div>`;
+  h += `<div class="doc-meta">${ed('EMAIL_KOMERCIALISTA', p.EMAIL_KOMERCIALISTA, 'email')} ·
+        ${ed('TELEFON_KOMERCIALISTA', p.TELEFON_KOMERCIALISTA, 'telefon (neobvezno)')}</div>`;
+
+  document.getElementById('doc').innerHTML = h;
+}
+
+function renderDodatna(dop) {
+  if (!dop || (!dop.naslov && !dop.uvod && !(dop.tocke || []).length && !(dop.investicija || []).length)) {
+    return `<button class="doc-mini" onclick="docDodajDodatno()">+ Dodaj dodatno opcijo</button>`;
+  }
+  const tocke = (dop.tocke || []).map((t, j) =>
+    `<li>${ed(`dodatna_opcija.tocke.${j}`, t, 'točka')}
+      <button class="doc-x" onclick="docOdstraniDopTocko(${j})">×</button></li>`).join('');
+  const inv = (dop.investicija || []).map((iv, j) =>
+    `<div>${ed(`dodatna_opcija.investicija.${j}`, iv, 'npr. 190,00 €/mes.')}
+      <button class="doc-x" onclick="docOdstraniDopInv(${j})">×</button></div>`).join('');
+  return `<div class="doc-dodatna">
+    <div class="doc-card-head">
+      <div class="doc-card-naziv" contenteditable data-bind="dodatna_opcija.naslov" data-ph="Naslov dodatne opcije">${esc(dop.naslov || '')}</div>
+      <button class="doc-x" title="Odstrani dodatno opcijo" onclick="docOdstraniDodatno()">×</button>
+    </div>
+    <p>${ed('dodatna_opcija.uvod', dop.uvod, 'uvodni opis (neobvezno)')}</p>
+    <ul class="doc-list">${tocke}</ul>
+    <button class="doc-mini" onclick="docDodajDopTocko()">+ točka</button>
+    <div style="margin-top:8px;font-size:11px;color:#888;text-transform:uppercase;">Investicija</div>
+    ${inv}
+    <button class="doc-mini" onclick="docDodajDopInv()">+ vrstica investicije</button>
+  </div>`;
+}
+
+// ── Strukturni handlerji (+ / −) — vsi: flush → mutiraj → ponovno izriši ──
+function docDodajStoritev() { flushEdits(); (stanje.storitve = stanje.storitve || []).push({ naziv: '', podnaslov: '', tocke: [], vzpostavitev: '', mesecno: '', opomba: '' }); renderDoc(); }
+function docOdstraniStoritev(i) { flushEdits(); stanje.storitve.splice(i, 1); renderDoc(); }
+function docDodajOpis(i) { flushEdits(); const s = stanje.storitve[i]; if (!Array.isArray(s.opis)) s.opis = s.opis ? [s.opis] : []; s.opis.push(''); renderDoc(); }
+function docOdstraniOpis(i, j) { flushEdits(); stanje.storitve[i].opis.splice(j, 1); renderDoc(); }
+function docDodajTocko(i) { flushEdits(); (stanje.storitve[i].tocke = stanje.storitve[i].tocke || []).push(''); renderDoc(); }
+function docOdstraniTocko(i, j) { flushEdits(); stanje.storitve[i].tocke.splice(j, 1); renderDoc(); }
+function docDodajFazo(i) { flushEdits(); (stanje.storitve[i].faze = stanje.storitve[i].faze || []).push({ naslov: '', trajanje: '', naloge: [], skupaj_ure: '', skupaj_vrednost: '' }); renderDoc(); }
+function docOdstraniFazo(i, fi) { flushEdits(); stanje.storitve[i].faze.splice(fi, 1); renderDoc(); }
+function docDodajNalogo(i, fi) { flushEdits(); (stanje.storitve[i].faze[fi].naloge = stanje.storitve[i].faze[fi].naloge || []).push({ opis: '', ure: '', vrednost: '' }); renderDoc(); }
+function docOdstraniNalogo(i, fi, ni) { flushEdits(); stanje.storitve[i].faze[fi].naloge.splice(ni, 1); renderDoc(); }
+function docDodajDodatno() { flushEdits(); stanje.dodatna_opcija = { naslov: 'Dodatna opcija', uvod: '', tocke: [], investicija: [] }; renderDoc(); }
+function docOdstraniDodatno() { flushEdits(); delete stanje.dodatna_opcija; renderDoc(); }
+function docDodajDopTocko() { flushEdits(); (stanje.dodatna_opcija.tocke = stanje.dodatna_opcija.tocke || []).push(''); renderDoc(); }
+function docOdstraniDopTocko(j) { flushEdits(); stanje.dodatna_opcija.tocke.splice(j, 1); renderDoc(); }
+function docDodajDopInv() { flushEdits(); (stanje.dodatna_opcija.investicija = stanje.dodatna_opcija.investicija || []).push(''); renderDoc(); }
+function docOdstraniDopInv(j) { flushEdits(); stanje.dodatna_opcija.investicija.splice(j, 1); renderDoc(); }
+
+// Lepljenje v urljiva polja kot navadno besedilo (brez HTML formatiranja).
+document.addEventListener('DOMContentLoaded', () => {
+  const docEl = document.getElementById('doc');
+  if (!docEl) return;
+  docEl.addEventListener('paste', e => {
+    if (!e.target.closest('[contenteditable]')) return;
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+    document.execCommand('insertText', false, text);
+  });
+});
 
 // ── PDF ───────────────────────────────────────────────────────────
 async function generiraiPdf() {
@@ -689,8 +950,11 @@ async function generiraiPdf() {
   btn.classList.add('hidden');
   document.getElementById('pdf-loading').classList.remove('hidden');
 
+  flushEdits();      // read all contenteditable values back into stanje
+  pociistiStanje();  // drop empty rows so render.js gets clean data
+
   try {
-    const res = await post('/generiraj-pdf', {});
+    const res = await post('/generiraj-pdf', stanje);
     if (!res.ok) throw new Error(res.napaka);
 
     document.getElementById('pdf-filename').textContent = res.datoteka;
@@ -704,61 +968,6 @@ async function generiraiPdf() {
   }
 }
 
-// ── NALOŽI POPRAVLJEN WORD ────────────────────────────────────────
-function handleWordDrop(e) {
-  e.preventDefault();
-  document.getElementById('word-upload-area').classList.remove('drag');
-  const file = e.dataTransfer.files[0];
-  if (file) handleWordUpload(file);
-}
-
-async function handleWordUpload(file) {
-  if (!file || !file.name.toLowerCase().endsWith('.docx')) return;
-  const napaka = document.getElementById('dokument-napaka');
-  napaka.classList.add('hidden');
-
-  const area = document.getElementById('word-upload-area');
-  const filenameEl = document.getElementById('word-upload-filename');
-  area.classList.add('has-file');
-  area.classList.remove('drag');
-  filenameEl.textContent = file.name;
-  filenameEl.classList.remove('hidden');
-
-  // Preberi kot base64
-  const docx = await new Promise((res, rej) => {
-    const reader = new FileReader();
-    reader.onload = e => res(e.target.result.split(',')[1]);
-    reader.onerror = rej;
-    reader.readAsDataURL(file);
-  });
-
-  document.getElementById('word-upload-loading').classList.remove('hidden');
-  document.getElementById('btn-pdf').classList.add('hidden');
-
-  try {
-    // 1) Preberi popravljen Word nazaj v strukturo (ohrani vrednosti verbatim)
-    const parsed = await post('/razcleni', { docx, ohraniVerbatim: true });
-    if (!parsed.ok) throw new Error(parsed.napaka);
-
-    // Osvezi formo, da je vsebina skladna ce gre uporabnik kasneje urejat
-    zapolniFormo(parsed.podatki);
-
-    // 2) Takoj generiraj PDF iz vsebine Worda
-    const res = await post('/generiraj-pdf', parsed.podatki);
-    if (!res.ok) throw new Error(res.napaka);
-
-    document.getElementById('pdf-filename').textContent = res.datoteka;
-    document.getElementById('pdf-link').href = '/prenesi/pdf/' + res.datoteka;
-    document.getElementById('pdf-box').classList.remove('hidden');
-  } catch (err) {
-    prikaziNapako(napaka, 'Napaka: ' + err.message);
-  } finally {
-    document.getElementById('word-upload-loading').classList.add('hidden');
-    area.classList.remove('has-file');
-    filenameEl.classList.add('hidden');
-  }
-}
-
 // ── NAVIGACIJA ────────────────────────────────────────────────────
 function nazajNaVnos() {
   show('step-forma', false);
@@ -767,6 +976,8 @@ function nazajNaVnos() {
 }
 
 function nazajNaFormo() {
+  flushEdits();          // keep edits made in the document
+  zapolniFormo(stanje);  // mirror canonical state back into the form
   show('step-dokument', false);
   show('step-forma', true);
   setStepActive(2);
