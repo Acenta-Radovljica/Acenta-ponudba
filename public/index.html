@@ -271,7 +271,7 @@
     <div class="card">
       <div class="loading-box">
         <div class="spinner"></div>
-        <div class="loading-text">Claude analizira dokument...</div>
+        <div class="loading-text" id="loading-text">Claude analizira dokument...</div>
       </div>
     </div>
   </div>
@@ -280,6 +280,8 @@
   <div id="step-forma" class="hidden">
     <div class="card">
       <div class="card-title">Pregled in urejanje</div>
+
+      <div id="opozorila-box" class="hidden" style="background:#fff7e0;border-left:3px solid #e2a600;padding:10px 14px;margin-bottom:18px;font-size:9.5pt;color:#0B0F10;line-height:1.5;"></div>
 
       <!-- STRANKA -->
       <div class="sekcija-naslov">Stranka</div>
@@ -555,11 +557,27 @@ async function razcleni() {
   show('step-loading', true);
   setStepActive(2);
 
+  // Dvofazni napredek: server pri AI ponudbah teče v dveh korakih (scoping →
+  // razgradnja), zato vrtimo sporočila po času, da uporabnik ve, da se dela.
+  const sporocila = [
+    'Claude analizira dokument...',
+    'Razčlenjujem procese stranke...',
+    'Sestavljam ponudbo in preverjam seštevke...'
+  ];
+  let si = 0;
+  const loadingEl = document.getElementById('loading-text');
+  loadingEl.textContent = sporocila[0];
+  const rotacija = setInterval(() => {
+    si = Math.min(si + 1, sporocila.length - 1);
+    loadingEl.textContent = sporocila[si];
+  }, 25000);
+
   try {
     const res = await post('/razcleni', body);
     if (!res.ok) throw new Error(res.napaka);
     stanje = res.podatki || {};
     zapolniFormo(res.podatki);
+    prikaziOpozorila(res.opozorila);
     show('step-loading', false);
     show('step-forma', true);
   } catch (err) {
@@ -567,7 +585,26 @@ async function razcleni() {
     show('step-vnos', true);
     setStepActive(1);
     prikaziNapako(napaka, 'Napaka: ' + err.message);
+  } finally {
+    clearInterval(rotacija);
   }
+}
+
+// Opozorila iz razčlembe (predpostavke, odprta vprašanja, interne opombe).
+// Vidi jih samo komercialist v appu; v ponudba.json in PDF ne gredo.
+function prikaziOpozorila(ops) {
+  const box = document.getElementById('opozorila-box');
+  if (!box) return;
+  if (!Array.isArray(ops) || !ops.length) {
+    box.classList.add('hidden');
+    box.innerHTML = '';
+    return;
+  }
+  box.innerHTML = '<strong>Opozorila za pregled (ne gredo v PDF):</strong>'
+    + '<ul style="margin:6px 0 0 18px;">'
+    + ops.map(o => `<li>${esc(o)}</li>`).join('')
+    + '</ul>';
+  box.classList.remove('hidden');
 }
 
 // ── FORMA ─────────────────────────────────────────────────────────
