@@ -6,3 +6,6 @@ output/
 .ponudbe/
 .takeover/
 data/ponudba.json
+
+# HTML prototipi z vzorčnimi podatki strank
+design-prototype/

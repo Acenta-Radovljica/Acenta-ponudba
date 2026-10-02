@@ -506,6 +506,11 @@
     font-style: italic;
   }
 
+  .price-table-wrapper + .price-note {
+    margin: 8px 0 0;
+    text-align: right;
+  }
+
   .price-table-wrapper {
     border-radius: var(--radius);
     overflow: hidden;
@@ -1178,7 +1183,7 @@
       <div class="logo-divider"></div>
       <span class="logo-tagline">Učinkovite<br>rešitve</span>
     </div>
-    <span class="service-badge">{{STORITEV_BADGE}}</span>
+    <span class="service-badge" data-cilj="oznaka">{{STORITEV_BADGE}}</span>
   </div>
 </div>
 
@@ -1186,14 +1191,14 @@
      TITLE BLOCK — Split layout: title left, meta right
      ============================================================ -->
 <div class="title-block">
-  <div class="meta-table">
+  <div class="meta-table" data-cilj="glava">
     <span class="meta-label">Datum:</span> <strong>{{DATUM}}</strong><br>
     <span class="meta-label">Ponudba:</span> <strong>{{STEVILKA_PONUDBE}}</strong><br>
     <span class="meta-label">Stranka:</span> <strong>{{IME_STRANKE}}</strong>{{STRANKA_DETAILS}}<br>
     {{DODATNI_META}}
   </div>
-  <h1 class="proposal-title">{{NASLOV}}</h1>
-  <div class="proposal-subtitle">{{PODNASLOV}}</div>
+  <h1 class="proposal-title" data-cilj="naslov">{{NASLOV}}</h1>
+  <div class="proposal-subtitle" data-cilj="podnaslov">{{PODNASLOV}}</div>
 </div>
 <hr class="title-divider">
 
@@ -1203,7 +1208,7 @@
 <div class="content">
 
   <!-- SECTION 1 — Zakaj ta storitev? -->
-  <div class="section">
+  <div class="section" data-cilj="uvod">
     <div class="section-header">
       <div class="section-number">1</div>
       <h2 class="section-title">ZAKAJ <span class="accent">TA STORITEV?</span></h2>
@@ -1234,33 +1239,10 @@
       <h2 class="section-title">CENOVNA <span class="accent">STRUKTURA</span></h2>
     </div>
     {{FAZNI_BLOK_HTML}}
-    <div class="price-table-wrapper">
-      <table class="price-table">
-        <colgroup>
-          <col style="width:23%">
-          <col style="width:19%">
-          <col style="width:22%">
-          <col style="width:36%">
-        </colgroup>
-        <thead>
-          <tr>
-            <th>Storitev</th>
-            <th>Vzpostavitev (1x)</th>
-            <th>Mesečno</th>
-            <th>Opomba</th>
-          </tr>
-        </thead>
-        <tbody>
-          {{VRSTICE_CEN}}
-          <tr class="total-row">
-            <td>SKUPAJ</td>
-            <td>{{SKUPAJ_VZPOSTAVITEV}}</td>
-            <td>{{SKUPAJ_MESECNO}}</td>
-            <td class="total-ddv">{{SKUPAJ_DDV_INFO}}</td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="price-table-wrapper" data-cilj="cene">
+      {{CENOVNA_TABELA}}
     </div>
+    {{CENE_OPOMBA}}
     {{DODATNA_OPCIJA_HTML}}
   </div>
 
@@ -1270,8 +1252,9 @@
   {{RAZDELEK_KORAKI}}
 
   <!-- CTA BOX -->
-  <div class="cta-box">
+  <div class="cta-box" data-cilj="zakljucek">
     <div class="cta-inner">
+      <!-- CTA:ZACETEK -->
       <div class="cta-heading">Začnimo sodelovanje</div>
       <p class="cta-text">
         Pripravljeni na naslednji korak? Kontaktirajte nas za brezplačno predstavitev
@@ -1284,11 +1267,12 @@
         &nbsp;&middot;&nbsp;
         +386 (0) 4 530 28 28
       </div>
+      <!-- CTA:KONEC -->
     </div>
   </div>
 
   <!-- SIGNATURE -->
-  <div class="signature-section">
+  <div class="signature-section" data-cilj="podpis">
     <div class="signature-left">
       <div class="signature-name">{{IME_KOMERCIALISTA}}</div>
       <div class="signature-role">{{NAZIV_KOMERCIALISTA}}</div>
@@ -1308,7 +1292,7 @@
 <!-- ============================================================
      COMPANY PRESENTATION — Static, appears on all ponudbe
      ============================================================ -->
-<div class="company-section">
+<div class="company-section" data-cilj="podjetje">
 
   <div class="company-header">
     <div class="section-number">{{ST_RAZDELEK_PODJETJE}}</div>
@@ -1396,8 +1380,9 @@
     </div>
   </div>
 
+  <!-- REFERENCE:ZACETEK -->
   <!-- REFERENCES -->
-  <div class="ref-section">
+  <div class="ref-section" data-cilj="reference">
     <div class="ref-title">Nekatere naše reference</div>
     <div class="ref-grid">
       <span class="ref-tag">Integral Avto</span>
@@ -1419,6 +1404,7 @@
       <span class="ref-tag">Višja strokovna šola Bled</span>
     </div>
   </div>
+  <!-- REFERENCE:KONEC -->
 
 </div>
 

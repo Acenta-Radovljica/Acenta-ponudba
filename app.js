@@ -2,13 +2,41 @@ import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import { query } from '@anthropic-ai/claude-agent-sdk';
 import mammoth from 'mammoth';
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, unlinkSync } from 'fs';
 import { resolve, dirname, basename, extname, sep } from 'path';
 import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
+import { tmpdir } from 'os';
+import { randomBytes, timingSafeEqual } from 'crypto';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
+
+// ── PRIJAVA ────────────────────────────────────────────────────────
+// PONUDBE_UPORABNIKI="ime:geslo,ime2:geslo2" vklopi HTTP Basic prijavo za cel app
+// (stran in API). Brez spremenljivke prijave ni (lokalni razvoj).
+const UPORABNIKI = (process.env.PONUDBE_UPORABNIKI || '')
+  .split(',').map(s => s.trim()).filter(Boolean)
+  .map(s => { const i = s.indexOf(':'); return [s.slice(0, i), s.slice(i + 1)]; })
+  .filter(([u, g]) => u && g);
+const enako = (a, b) => {
+  const x = Buffer.from(a), y = Buffer.from(b);
+  return x.length === y.length && timingSafeEqual(x, y);
+};
+if (UPORABNIKI.length) {
+  app.use((req, res, next) => {
+    const [vrsta, kodirano] = (req.headers.authorization || '').split(' ');
+    if (vrsta === 'Basic' && kodirano) {
+      const dekodirano = Buffer.from(kodirano, 'base64').toString('utf8');
+      const i = dekodirano.indexOf(':');
+      const ime = dekodirano.slice(0, i), geslo = dekodirano.slice(i + 1);
+      if (i > 0 && UPORABNIKI.some(([u, g]) => enako(u, ime) && enako(g, geslo))) return next();
+    }
+    res.set('WWW-Authenticate', 'Basic realm="Generator ponudb", charset="UTF-8"');
+    res.status(401).send('Prijava je obvezna.');
+  });
+}
+
 app.use(express.json({ limit: '20mb' }));
 app.use(express.static(resolve(__dirname, 'public')));
 
@@ -481,6 +509,179 @@ const SCHEMA_PONUDBA = {
   required: ['NASLOV', 'IME_STRANKE', 'storitve']
 };
 
+// ── POPRAVKI PO KOMENTARJIH (korak Predogled) ──────────────────────
+const NASTAVITVE_OBLIKE = ['paketna_cena', 'zakljucni_stavek', 'skrij_reference', 'brez_ddv'];
+
+const POPRAVKI_PROMPT = `Si urednik prodajnih ponudb digitalne marketinške agencije Acenta.si.
+Dobiš obstoječo ponudbo v JSON in komentarje osebe, ki ponudbo pripravlja. Pripravi TOČNO tiste spremembe, ki jih komentarji zahtevajo, in nič drugega.
+
+PRAVILA:
+1. Vsaka sprememba ima številko komentarja, na katerega se nanaša (polje "komentar").
+2. Spreminjaj samo polja, ki jih komentar našteje pri "polja". Splošni komentar (brez polj) velja za celo ponudbo.
+3. "pot" je pot v JSON s pikami, indeksi začnejo z 0. Primeri: UVODNI_ODSTAVEK, PODNASLOV, KORAK_3, storitve.0.naziv, storitve.1.tocke.2, storitve.0.vzpostavitev, storitve.0.faze.1.naloge.0.vrednost, storitve.0.obseg.skupine.1.uvod, dodatna_opcija.uvod.
+4. "operacija":
+   - "nastavi": polje dobi novo besedilo; v "vrednost" napiši CELOTNO novo besedilo polja, ne samo spremenjenega dela.
+   - "dodaj": nov element na konec seznama besedil; "pot" kaže na seznam (npr. storitve.0.tocke), "vrednost" je novo besedilo.
+   - "odstrani": odstrani element seznama; "pot" kaže na element (npr. storitve.0.tocke.3), "vrednost" pusti prazno.
+5. Ne izmišljuj cen, datumov, številk ali dejstev, ki jih ni v ponudbi ali v komentarju. Cene piši v obliki "1.000,00 €", mesečne "190,00 €/mes.".
+6. Če spremeniš ceno naloge v fazi, uskladi tudi "skupaj_vrednost" te faze in "vzpostavitev" storitve, da se seštevki ujemajo.
+7. Če komentar navaja besedilo za prepis (npr. v narekovajih ali z "napiši po tem besedilu"), ga uporabi dobesedno.
+8. Jezik: slovenščina s šumniki, brez pomišljajev (— in –), stranko vikaj, ohrani slog in ton ponudbe. Ne tikaj, če ponudba vika.
+9. Komentarji o obliki gredo v "oblika", ne v "spremembe", kadar se ujemajo z eno od teh nastavitev:
+   - paketna_cena: v cenovni tabeli samo skupna cena paketa, brez postavk (vklopi=true).
+   - zakljucni_stavek: zaključni okvir z enim samim stavkom namesto kontaktov (telefon, e-pošta, splet); "besedilo" je ta stavek.
+   - skrij_reference: brez seznama referenc na zadnji strani.
+   - brez_ddv: cene samo brez DDV, brez zneska DDV in cene z DDV.
+   Za izklop nastavitve vrni vklopi=false.
+10. Komentar, ki ga ne moreš izvesti ne z besedilom ne z nastavitvijo (npr. barve, pisava, postavitev strani, logotip, vsebina razdelka O podjetju), vrni v "neizvedljivo" s kratkim razlogom.
+11. "opis" je en kratek stavek, kaj je sprememba naredila (npr. "Uvod prepisan po priloženem besedilu.").
+12. En komentar lahko zahteva več sprememb (npr. "kampanje" povsod zamenjaj z "mailingi"): naredi vse, vsako kot svojo spremembo.`;
+
+const SCHEMA_POPRAVKI = {
+  type: 'object',
+  properties: {
+    spremembe: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          komentar: { type: 'integer' },
+          operacija: { type: 'string', enum: ['nastavi', 'dodaj', 'odstrani'] },
+          pot: { type: 'string' },
+          vrednost: { type: 'string' },
+          opis: { type: 'string' }
+        },
+        required: ['komentar', 'operacija', 'pot', 'vrednost', 'opis']
+      }
+    },
+    oblika: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          komentar: { type: 'integer' },
+          nastavitev: { type: 'string', enum: NASTAVITVE_OBLIKE },
+          vklopi: { type: 'boolean' },
+          besedilo: { type: 'string' }
+        },
+        required: ['komentar', 'nastavitev', 'vklopi']
+      }
+    },
+    neizvedljivo: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: { komentar: { type: 'integer' }, razlog: { type: 'string' } },
+        required: ['komentar', 'razlog']
+      }
+    }
+  },
+  required: ['spremembe', 'oblika', 'neizvedljivo']
+};
+
+// Polja ponudbe, ki jih sme spremeniti popravek (ostalo, npr. oblika ali tuji ključi, zavrnemo).
+const POPRAVLJIVA_POLJA = new Set([
+  'STORITEV_BADGE', 'NASLOV', 'PODNASLOV', 'DATUM', 'STEVILKA_PONUDBE', 'IME_STRANKE', 'NASLOV_STRANKE',
+  'KONTAKTNA_OSEBA', 'TELEFON_STRANKE', 'DODATNI_META', 'UVODNI_ODSTAVEK', 'PREDPOSTAVKE', 'IZKLUCITVE',
+  'PLACILNI_POGOJI', 'VELJAVNOST_PONUDBE', 'IME_KOMERCIALISTA', 'NAZIV_KOMERCIALISTA', 'EMAIL_KOMERCIALISTA',
+  'TELEFON_KOMERCIALISTA', 'NASLOV_KORAK_1', 'KORAK_1', 'NASLOV_KORAK_2', 'KORAK_2', 'NASLOV_KORAK_3', 'KORAK_3',
+  'NASLOV_KORAK_4', 'KORAK_4', 'storitve', 'dodatna_opcija'
+]);
+// Seznami besedil, ki jih sme popravek ustvariti, če jih ponudba še nima.
+const SEZNAMI_BESEDIL = new Set(['tocke', 'opis', 'investicija']);
+
+const OZNAKE_POLJ = {
+  STORITEV_BADGE: 'Oznaka storitve', NASLOV: 'Naslov', PODNASLOV: 'Podnaslov', DATUM: 'Datum',
+  STEVILKA_PONUDBE: 'Številka ponudbe', IME_STRANKE: 'Stranka', NASLOV_STRANKE: 'Naslov stranke',
+  KONTAKTNA_OSEBA: 'Kontaktna oseba', TELEFON_STRANKE: 'Telefon stranke', DODATNI_META: 'Povzetek v glavi',
+  UVODNI_ODSTAVEK: 'Zakaj ta storitev', PREDPOSTAVKE: 'Predpostavke', IZKLUCITVE: 'V ceno ni zajeto',
+  PLACILNI_POGOJI: 'Plačilni pogoji', VELJAVNOST_PONUDBE: 'Veljavnost', IME_KOMERCIALISTA: 'Podpis: ime',
+  NAZIV_KOMERCIALISTA: 'Podpis: naziv', EMAIL_KOMERCIALISTA: 'Podpis: e-pošta', TELEFON_KOMERCIALISTA: 'Podpis: telefon',
+  naziv: 'naziv', podnaslov: 'podnaslov', tocke: 'točka', opis: 'odstavek', vzpostavitev: 'cena vzpostavitve',
+  mesecno: 'mesečna cena', opomba: 'opomba', naziv_tabela: 'naziv v tabeli', faze: 'faza', naloge: 'naloga',
+  vrednost: 'vrednost', ure: 'ure', skupaj_vrednost: 'skupaj', skupaj_ure: 'skupaj ur', trajanje: 'trajanje',
+  naslov: 'naslov', uvod: 'uvod', obseg: 'obseg', skupine: 'skupina', investicija: 'investicija'
+};
+
+const vzemiPot = (obj, deli) => deli.reduce((o, k) => (o == null ? undefined : o[k]), obj);
+
+function oznakaPoti(deli, ponudba) {
+  const [glava, ...ostalo] = deli;
+  const korak = /^(NASLOV_)?KORAK_(\d)$/.exec(glava);
+  if (korak) return `Korak ${korak[2]}${korak[1] ? ': naslov' : ''}`;
+  if (glava === 'storitve') {
+    const i = Number(ostalo[0]);
+    const naziv = ponudba.storitve?.[i]?.naziv || `storitev ${i + 1}`;
+    const rep = ostalo.slice(1).map(k => (/^\d+$/.test(k) ? String(Number(k) + 1) : (OZNAKE_POLJ[k] || k)));
+    return [`Storitev »${naziv}«`, rep.join(' ')].filter(Boolean).join(' · ');
+  }
+  if (glava === 'dodatna_opcija') {
+    return ['Dodatna opcija', ostalo.map(k => (/^\d+$/.test(k) ? String(Number(k) + 1) : (OZNAKE_POLJ[k] || k))).join(' ')].filter(Boolean).join(' · ');
+  }
+  return OZNAKE_POLJ[glava] || glava;
+}
+
+// Preveri predlog modela proti dejanski ponudbi: neznane poti in tipi gredo ven,
+// "prej" vzamemo iz ponudbe, označimo spremembe cen in posege izven komentiranega dela.
+function preveriPopravke(odgovor, ponudba, komentarji) {
+  const poKomentarju = new Map(komentarji.map(k => [k.n, k]));
+  const spremembe = [];
+  const zavrnjene = [];
+  const opisBesedila = (v) => (typeof v === 'string' ? v : (v && (v.naziv || v.naslov || v.opis)) || JSON.stringify(v));
+
+  for (const s of odgovor.spremembe || []) {
+    const pot = String(s.pot || '').trim();
+    const deli = pot.split('.');
+    const op = s.operacija;
+    const zadnji = deli[deli.length - 1];
+    const trenutno = vzemiPot(ponudba, deli);
+    const stars = deli.length > 1 ? vzemiPot(ponudba, deli.slice(0, -1)) : ponudba;
+    let prej = '';
+    let potem = String(s.vrednost ?? '').trim();
+
+    const veljavnaPot = /^[A-Za-z_][A-Za-z_0-9]*(\.[A-Za-z_0-9]+)*$/.test(pot) && POPRAVLJIVA_POLJA.has(deli[0]);
+    if (!veljavnaPot || !['nastavi', 'dodaj', 'odstrani'].includes(op)) { zavrnjene.push(pot); continue; }
+
+    if (op === 'nastavi') {
+      const noviKljuc = trenutno === undefined && stars && typeof stars === 'object' && !Array.isArray(stars);
+      if (!(typeof trenutno === 'string' || noviKljuc || (trenutno == null && deli.length === 1))) { zavrnjene.push(pot); continue; }
+      prej = typeof trenutno === 'string' ? trenutno : '';
+      if (prej === potem) continue;
+    } else if (op === 'dodaj') {
+      const obstojeci = Array.isArray(trenutno) && trenutno.every(x => typeof x === 'string');
+      const novSeznam = trenutno === undefined && SEZNAMI_BESEDIL.has(zadnji) && stars && typeof stars === 'object' && !Array.isArray(stars);
+      if (!(obstojeci || novSeznam) || !potem) { zavrnjene.push(pot); continue; }
+    } else {
+      const idx = Number(zadnji);
+      if (!Array.isArray(stars) || !/^\d+$/.test(zadnji) || idx >= stars.length) { zavrnjene.push(pot); continue; }
+      prej = opisBesedila(trenutno);
+      potem = '';
+    }
+
+    const kom = poKomentarju.get(Number(s.komentar));
+    spremembe.push({
+      komentar: kom ? kom.n : null,
+      operacija: op,
+      pot,
+      oznaka: oznakaPoti(deli, ponudba),
+      prej,
+      potem,
+      opis: String(s.opis || ''),
+      je_cena: /(^|\.)(vzpostavitev|mesecno|vrednost|skupaj_vrednost|investicija)(\.|$)/.test(pot),
+      izven: Boolean(kom && kom.polja.length && !kom.polja.some(p => pot === p || pot.startsWith(p + '.')))
+    });
+  }
+
+  const oblika = [];
+  for (const o of odgovor.oblika || []) {
+    if (!NASTAVITVE_OBLIKE.includes(o.nastavitev) || oblika.some(x => x.nastavitev === o.nastavitev)) continue;
+    oblika.push({ komentar: Number(o.komentar) || null, nastavitev: o.nastavitev, vklopi: Boolean(o.vklopi), besedilo: String(o.besedilo || '').trim() });
+  }
+  const neizvedljivo = (odgovor.neizvedljivo || []).map(x => ({ komentar: Number(x.komentar) || null, razlog: String(x.razlog || '') }));
+  if (zavrnjene.length) console.warn('Popravki: zavrnjene poti:', zavrnjene.join(', '));
+  return { spremembe, oblika, neizvedljivo, zavrnjenih: zavrnjene.length };
+}
+
 // ── Claudov klic (skupno za vse vire vhoda) ────────────────────────
 async function razcleniVsebino(content, sistemskiPrompt = SISTEM_PROMPT, maxTokens = 4096, schema = null) {
   // S shemo: tool use → API vrne objekt, JSON.parse odpade. Sonnet 5.5 zavrne vsiljen
@@ -727,6 +928,74 @@ app.post('/generiraj-pdf', async (req, res) => {
   }
 });
 
+// ── PREDOGLED (HTML, enak kot PDF) ─────────────────────────────────
+// Vsak klic dobi svoji začasni datoteki, da se sočasni predogledi ne prepisujejo
+// (data/ponudba.json ostane samo za PDF/Word izvoz).
+app.post('/predogled', async (req, res) => {
+  const id = randomBytes(6).toString('hex');
+  const jsonPot = resolve(tmpdir(), `ponudba-predogled-${id}.json`);
+  const htmlPot = resolve(tmpdir(), `ponudba-predogled-${id}.html`);
+  try {
+    const podatki = normalizirajPonudbo(req.body || {}, { preveriDatum: false }).data;
+    writeFileSync(jsonPot, JSON.stringify(podatki));
+    await runRender('html', { PONUDBA_JSON: jsonPot, HTML_OUT: htmlPot });
+    res.json({ ok: true, html: readFileSync(htmlPot, 'utf8'), opozorila: preveriSestevke(podatki) });
+  } catch (err) {
+    console.error('Napaka /predogled:', err.message);
+    res.status(500).json({ ok: false, napaka: err.message });
+  } finally {
+    for (const p of [jsonPot, htmlPot]) { try { unlinkSync(p); } catch {} }
+  }
+});
+
+// ── POPRAVI PO KOMENTARJIH ─────────────────────────────────────────
+// AI predlaga spremembe po komentarjih iz predogleda. NIČ ne uveljavi: vrne seznam
+// sprememb (prej → potem), ki jih komercialist potrdi v appu. Vrednost "prej" vzamemo
+// iz ponudbe na strežniku, ne iz odgovora modela.
+app.post('/popravi', async (req, res) => {
+  try {
+    const { podatki, komentarji } = req.body || {};
+    if (!podatki || typeof podatki !== 'object') throw new Error('Manjka ponudba.');
+    const seznam = (Array.isArray(komentarji) ? komentarji : [])
+      .filter(k => k && String(k.besedilo || '').trim())
+      .map(k => ({
+        n: Number(k.n),
+        del: String(k.del || 'Splošno'),
+        polja: Array.isArray(k.polja) ? k.polja.map(String) : [],
+        besedilo: String(k.besedilo).trim()
+      }));
+    if (!seznam.length) throw new Error('Ni komentarjev.');
+
+    const { oblika = {}, ...vsebina } = podatki;
+    const vhod = [
+      'PONUDBA (JSON):',
+      JSON.stringify(vsebina, null, 2),
+      '',
+      'TRENUTNE NASTAVITVE OBLIKE:',
+      JSON.stringify(oblika),
+      '',
+      'KOMENTARJI:',
+      // Del brez polj (Zaključek, O podjetju, Reference) ima samo nastavitve oblike ali fiksno vsebino.
+      ...seznam.map(k => `${k.n}. [Del: ${k.del}${k.polja.length ? ' · polja: ' + k.polja.join(', ')
+        : k.del === 'Splošno' ? ' · velja za celo ponudbo' : ' · ta del nima besedilnih polj, samo nastavitve oblike ali fiksno vsebino'}] ${k.besedilo}`)
+    ].join('\n');
+
+    const odgovor = await pozeniRazclembo({
+      promptText: vhod,
+      content: [{ type: 'text', text: vhod }],
+      sistemskiPrompt: POPRAVKI_PROMPT,
+      maxTokens: 8192,
+      schema: SCHEMA_POPRAVKI,
+      timeoutMs: 120000
+    });
+
+    res.json({ ok: true, ...preveriPopravke(odgovor, vsebina, seznam) });
+  } catch (err) {
+    console.error('Napaka /popravi:', err.message);
+    res.status(500).json({ ok: false, napaka: err.message });
+  }
+});
+
 // ── DOWNLOAD ───────────────────────────────────────────────────────
 app.get('/prenesi/word/:datoteka', (req, res) => {
   const mapa = process.env.OSNUTKI_MAPA || resolve(__dirname, 'output/osnutki');
@@ -827,11 +1096,11 @@ function virVsebujeDatum(vir) {
 }
 
 // ── RENDER HELPER ──────────────────────────────────────────────────
-function runRender(ukaz) {
+function runRender(ukaz, dodatniEnv = {}) {
   return new Promise((resolve, reject) => {
     const proc = spawn('node', ['render.js', ukaz], {
       cwd: __dirname,
-      env: process.env,
+      env: { ...process.env, ...dodatniEnv },
       stdio: ['ignore', 'pipe', 'pipe']
     });
     let out = '';
@@ -839,7 +1108,7 @@ function runRender(ukaz) {
     proc.stderr.on('data', d => out += d);
     proc.on('close', code => {
       if (code !== 0) return reject(new Error(out));
-      const match = out.match(/✓ (?:Word|PDF): (.+)/);
+      const match = out.match(/✓ (?:Word|PDF|HTML): (.+)/);
       if (match) return resolve(match[1].trim());
       reject(new Error('Ni poti v outputu: ' + out));
     });

@@ -32,7 +32,7 @@
   .main { max-width: 860px; margin: 32px auto; padding: 0 16px 64px; }
 
   /* KORAKI */
-  .steps { display: flex; gap: 0; margin-bottom: 32px; }
+  .steps { display: flex; gap: 0; margin-bottom: 32px; flex-wrap: wrap; row-gap: 8px; }
   .step { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--gray); }
   .step.active { color: var(--dark); font-weight: 600; }
   .step.done { color: var(--teal); }
@@ -202,6 +202,94 @@
   .doc-dodatna { border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 6px; padding: 14px 16px; margin-top: 12px; }
   .doc-dodatna .doc-card-naziv { color: var(--accent); }
 
+  /* OBLIKA PONUDBE (korak 3) */
+  .oblika-box { border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; margin-top: 18px; background: #fafcfc; }
+  .oblika-naslov { font-size: 11px; font-weight: 800; color: var(--teal); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .oblika-vrsta { display: grid; grid-template-columns: 20px 1fr; gap: 2px 10px; padding: 7px 0; border-top: 1px solid var(--border); }
+  .oblika-vrsta:first-of-type { border-top: none; }
+  .oblika-vrsta input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--teal); margin-top: 2px; cursor: pointer; }
+  .oblika-ime { font-size: 13px; font-weight: 700; cursor: pointer; }
+  .oblika-opis { grid-column: 2; font-size: 12px; color: var(--gray); line-height: 1.5; }
+  .oblika-vnos { grid-column: 2; margin-top: 4px; padding: 7px 9px; border: 1px solid var(--border); border-radius: 5px; font-size: 12px; font-family: inherit; width: 100%; outline: none; }
+  .oblika-vnos:focus { border-color: var(--teal); }
+
+  /* PREDOGLED (korak 4) */
+  .main.siroko { max-width: 1360px; }
+  .pv-work { display: grid; grid-template-columns: minmax(0, 1fr) 410px; gap: 20px; align-items: start; }
+  .pv-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; }
+  .pv-toolbar { display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-bottom: 1px solid var(--border); white-space: nowrap; overflow: hidden; }
+  .pv-title { font-size: 14px; font-weight: 700; }
+  .pv-title span { color: var(--teal); }
+  .pv-meta { font-size: 12px; color: var(--gray); overflow: hidden; text-overflow: ellipsis; }
+  .pv-spacer { flex: 1; }
+  .pv-canvas { background: #e9edef; padding: 24px; overflow-x: auto; border-radius: 0 0 10px 10px; min-height: 400px; }
+  .pv-page { width: 794px; margin: 0 auto; background: #fff; border: 1px solid var(--border); position: relative; }
+  .pv-page iframe { display: block; width: 794px; height: 1100px; border: 0; }
+  .pv-page.nalaga iframe { opacity: .45; }
+  .pv-panel { position: sticky; top: 16px; display: flex; flex-direction: column; height: calc(100vh - 32px); max-height: 980px; }
+  .pv-body { flex: 1; overflow-y: auto; padding: 14px 16px; }
+  .pv-foot { border-top: 1px solid var(--border); padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .pv-hint { font-size: 12px; color: var(--gray); background: #f0fefe; border: 1px solid var(--teal); border-radius: 6px; padding: 9px 12px; margin-bottom: 14px; line-height: 1.5; }
+  .pv-warn { font-size: 12px; color: #92400e; background: #fffbeb; border: 1px solid #b45309; border-radius: 6px; padding: 9px 12px; margin-bottom: 12px; line-height: 1.5; }
+  .pv-empty { font-size: 12px; color: var(--gray); text-align: center; padding: 18px 8px; border: 1px dashed var(--border); border-radius: 8px; }
+  .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
+  .btn-row { display: flex; gap: 8px; }
+  .btn-row .btn { flex: 1; justify-content: center; }
+  .pv-foot .btn-primary { justify-content: center; }
+  .pv-note { font-size: 11px; color: var(--gray); text-align: center; }
+
+  .cmt { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; display: grid; grid-template-columns: 24px 1fr; gap: 4px 10px; cursor: pointer; }
+  .cmt:hover, .cmt.on { border-color: var(--teal); background: #eafaf9; }
+  .cmt.neizveden { border-left: 4px solid #b45309; }
+  .pin { width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  .pin.splosen { background: var(--gray); }
+  .cmt-del-ime { font-size: 10px; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; align-self: center; }
+  .cmt-text { grid-column: 2; font-size: 13px; line-height: 1.5; color: #222; white-space: pre-wrap; word-break: break-word; }
+  .cmt-text.krajse { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .cmt-razlog { grid-column: 2; font-size: 11px; color: #92400e; }
+  .cmt-akcije { grid-column: 2; display: flex; gap: 12px; margin-top: 2px; }
+  .povezava { background: none; border: none; color: var(--gray); font-size: 11px; cursor: pointer; padding: 0; font-family: inherit; }
+  .povezava:hover { color: var(--teal); }
+  .povezava.brisi:hover { color: var(--accent); }
+  .pv-splosen { margin-top: 12px; }
+  .pv-splosen label { display: block; font-size: 11px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 5px; }
+  .pv-splosen textarea, .pop textarea, .cmt textarea { min-height: 64px; }
+
+  .pop { position: absolute; z-index: 20; width: 330px; background: #fff; border: 1px solid var(--teal); border-radius: 8px; padding: 12px; }
+  .pop-glava { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .pop-del { font-size: 10px; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: .5px; }
+  .pop .btn-row { margin-top: 8px; }
+
+  .pv-sum { font-size: 13px; line-height: 1.5; margin-bottom: 6px; }
+  .pv-sum b { color: #1a7a4a; }
+  .pv-grp { font-size: 11px; font-weight: 800; color: var(--teal); text-transform: uppercase; letter-spacing: 1px; margin: 16px 0 8px; padding-bottom: 5px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .chg { border: 1px solid var(--border); border-left: 4px solid #1a7a4a; border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+  .chg.zavrnjena { border-left-color: #b8bec4; opacity: .6; }
+  .chg.zavrnjena .chg-potem { text-decoration: line-through; }
+  .chg-glava { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+  .chg-del { font-size: 10px; font-weight: 700; color: var(--teal); text-transform: uppercase; letter-spacing: .5px; }
+  .chg-ref { font-size: 10px; color: var(--gray); white-space: nowrap; }
+  .zastavica { font-size: 10px; font-weight: 700; color: #b45309; background: #fffbeb; border: 1px solid #b45309; border-radius: 3px; padding: 1px 5px; white-space: nowrap; }
+  .chg-lbl { font-size: 10px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: .5px; margin-top: 4px; }
+  .chg-prej { font-size: 12px; line-height: 1.5; color: var(--gray); text-decoration: line-through; text-decoration-color: rgba(107,114,128,.5); white-space: pre-wrap; word-break: break-word; }
+  .chg-prej.krajse { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; cursor: pointer; }
+  .chg-potem { font-size: 12.5px; line-height: 1.5; color: #1b2a22; background: #f0fdf4; border-radius: 4px; padding: 3px 6px; margin-top: 2px; white-space: pre-wrap; word-break: break-word; }
+  .chg-opis { font-size: 11px; color: var(--gray); margin-top: 4px; }
+  .chg-akcije { display: flex; gap: 6px; margin-top: 8px; }
+  .chip { border: 1px solid var(--border); background: #fff; border-radius: 5px; padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer; color: var(--dark); font-family: inherit; }
+  .chip.da.on { background: #1a7a4a; border-color: #1a7a4a; color: #fff; }
+  .chip.ne.on { background: var(--gray); border-color: var(--gray); color: #fff; }
+  .opt { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; display: grid; grid-template-columns: 20px 1fr; gap: 2px 10px; }
+  .opt input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--teal); margin-top: 2px; }
+  .opt-ime { font-size: 13px; font-weight: 700; }
+  .opt-opis { grid-column: 2; font-size: 12px; color: var(--gray); line-height: 1.5; }
+  .nei { border: 1px dashed var(--border); border-radius: 8px; padding: 9px 12px; margin-bottom: 8px; font-size: 12px; color: #444; line-height: 1.5; }
+
+  @media (max-width: 1180px) {
+    .pv-work { grid-template-columns: minmax(0, 1fr); }
+    .pv-panel { position: static; height: auto; max-height: none; }
+  }
+
   .hidden { display: none !important; }
 </style>
 </head>
@@ -227,6 +315,10 @@
     <div class="step-arrow">›</div>
     <div class="step" id="step-ind-3">
       <div class="step-num">3</div> Dokument
+    </div>
+    <div class="step-arrow">›</div>
+    <div class="step" id="step-ind-4">
+      <div class="step-num">4</div> Predogled
     </div>
   </div>
 
@@ -452,6 +544,8 @@
 
       <div id="doc" class="doc"></div>
 
+      <div class="oblika-box" id="oblika-box"></div>
+
       <div id="pdf-box" class="download-box hidden" style="border-color:#1a7a4a;background:#f0fdf4;margin-top:16px;">
         <div class="download-icon">📕</div>
         <div class="download-info">
@@ -468,12 +562,89 @@
       </div>
 
       <div class="actions" style="margin-top:20px;">
-        <button class="btn btn-primary" id="btn-pdf" onclick="generiraiPdf()">
+        <button class="btn btn-primary" onclick="naprejNaPredogled()">Predogled in komentarji →</button>
+        <button class="btn btn-outline" id="btn-pdf" onclick="generiraiPdf()">
           ✓ Generiraj PDF
         </button>
         <button class="btn btn-outline" onclick="nazajNaFormo()">← Uredi v formi</button>
         <button class="btn btn-outline" onclick="resetiraj()">↺ Nova ponudba</button>
       </div>
+    </div>
+  </div>
+
+  <!-- KORAK 4: PREDOGLED (komentarji → AI popravki → potrditev) -->
+  <div id="step-predogled" class="hidden">
+    <div class="pv-work">
+      <div class="pv-card">
+        <div class="pv-toolbar">
+          <div class="pv-title">Predogled <span>·</span> <span id="pv-verzija">verzija 1</span></div>
+          <div class="pv-meta" id="pv-meta">enako kot PDF</div>
+          <div class="pv-spacer"></div>
+          <button class="btn btn-outline btn-sm hidden" id="btn-razveljavi" onclick="razveljaviVerzijo()">← Prejšnja verzija</button>
+          <button class="btn btn-outline btn-sm" id="btn-oznake" onclick="preklopiOznake()">Skrij oznake</button>
+        </div>
+        <div class="pv-canvas">
+          <div class="pv-page" id="pv-page">
+            <iframe id="pv-frame" title="Predogled ponudbe"></iframe>
+            <div class="pop hidden" id="pop">
+              <div class="pop-glava"><div class="pin">+</div><div class="pop-del" id="pop-del"></div></div>
+              <textarea id="pop-text" placeholder="Kaj naj se spremeni?"></textarea>
+              <div class="btn-row">
+                <button class="btn btn-outline btn-sm" onclick="zapriPop()">Prekliči</button>
+                <button class="btn btn-primary btn-sm" onclick="shraniKomentar()">Shrani komentar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel: komentarji -->
+      <aside class="pv-card pv-panel" id="pv-panel-kom">
+        <div class="pv-toolbar"><div class="pv-title">Komentarji <span>·</span> <span id="kom-st">0</span></div></div>
+        <div class="pv-body">
+          <div class="pv-warn hidden" id="pv-opozorila"></div>
+          <div class="pv-hint">Klikni na del ponudbe na levi in napiši, kaj naj se spremeni. Ko končaš, pošlji vse komentarje naenkrat.</div>
+          <div id="kom-seznam"></div>
+          <div class="pv-splosen">
+            <label for="kom-splosen">Splošen komentar (velja za celo ponudbo)</label>
+            <textarea id="kom-splosen" placeholder="Npr. povsod zamenjaj »kampanje« z »mailingi«"></textarea>
+            <button class="btn btn-outline btn-sm" style="margin-top:6px;" onclick="dodajSplosen()">Dodaj komentar</button>
+          </div>
+          <div id="pv-napaka" class="napaka hidden"></div>
+        </div>
+        <div class="pv-foot">
+          <button class="btn btn-primary" id="btn-popravi" onclick="popraviPoKomentarjih()" disabled>Popravi po komentarjih</button>
+          <div class="btn-row">
+            <button class="btn btn-outline btn-sm" onclick="nazajNaUrejanje()">← Nazaj na urejanje</button>
+            <button class="btn btn-outline btn-sm" id="btn-pv-pdf" onclick="prenesiPdfPredogled()">Prenesi PDF</button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Panel: AI pripravlja popravke -->
+      <aside class="pv-card pv-panel hidden" id="pv-panel-nalaga">
+        <div class="loading-box">
+          <div class="spinner"></div>
+          <div class="loading-text" id="pv-nalaga-text">AI pripravlja popravke …</div>
+        </div>
+      </aside>
+
+      <!-- Panel: predlagane spremembe -->
+      <aside class="pv-card pv-panel hidden" id="pv-panel-spr">
+        <div class="pv-toolbar"><div class="pv-title">Predlagane spremembe</div></div>
+        <div class="pv-body">
+          <p class="pv-sum" id="spr-povzetek"></p>
+          <div id="spr-seznam"></div>
+        </div>
+        <div class="pv-foot">
+          <button class="btn btn-primary" onclick="uveljaviPredlog()">Uveljavi in osveži predogled</button>
+          <div class="btn-row">
+            <button class="btn btn-outline btn-sm" onclick="nazajNaKomentarje()">← Nazaj na komentarje</button>
+            <button class="btn btn-outline btn-sm" onclick="zavrniVse()">Zavrni vse</button>
+          </div>
+          <div class="pv-note" id="spr-stevec"></div>
+        </div>
+      </aside>
     </div>
   </div>
 
@@ -769,6 +940,7 @@ function naprejNaDokument() {
   document.getElementById('forma-napaka').classList.add('hidden');
   sinhronizirajFormoVStanje();
   renderDoc();
+  renderOblika();
   show('step-forma', false);
   show('step-dokument', true);
   document.getElementById('btn-pdf').classList.remove('hidden');
@@ -1005,6 +1177,540 @@ async function generiraiPdf() {
   }
 }
 
+// ── OBLIKA PONUDBE (korak 3) ──────────────────────────────────────
+// Nastavitve so v stanje.oblika in jih bere render.js. Polja so izven #doc, zato jih
+// flushEdits ne prepiše; vsaka sprememba gre takoj v stanje.
+const OBLIKA = [
+  { kljuc: 'paketna_cena', ime: 'Paketna cena brez postavk', opis: 'V cenovni tabeli ostane ena vrstica s skupno ceno paketa. Fazne tabele se ne prikažejo.',
+    vnos: 'paket_naziv', vnosPh: () => `Paket: ${stanje.NASLOV || stanje.STORITEV_BADGE || 'storitve'}` },
+  { kljuc: 'zakljucni_stavek', ime: 'Svoj zaključni stavek', opis: 'Namesto zaključka s telefonom, e-pošto in spletno stranjo samo ta stavek.', besedilo: true,
+    vnosPh: () => 'Veselimo se vaše potrditve in smo vam na voljo za dodatna pojasnila.' },
+  { kljuc: 'skrij_reference', ime: 'Skrij reference', opis: 'Razdelek z referencami na zadnji strani izpade.' },
+  { kljuc: 'brez_ddv', ime: 'Cene samo brez DDV', opis: 'Znesek DDV in cena z DDV izpadeta, pod tabelo ostane »Cene so brez DDV (22 %).«' },
+];
+
+function renderOblika() {
+  const ob = stanje.oblika || {};
+  document.getElementById('oblika-box').innerHTML = '<div class="oblika-naslov">Oblika ponudbe</div>' + OBLIKA.map(o => {
+    const on = o.besedilo ? typeof ob[o.kljuc] === 'string' && ob[o.kljuc] !== '' : Boolean(ob[o.kljuc]);
+    const vrednost = o.besedilo ? (ob[o.kljuc] || '').trim() : (o.vnos ? ob[o.vnos] || '' : '');
+    const vnos = (o.besedilo || o.vnos) && on
+      ? `<input class="oblika-vnos" data-vnos="${o.kljuc}" value="${esc(vrednost)}" placeholder="${esc(o.vnosPh())}">` : '';
+    return `<div class="oblika-vrsta">
+      <input type="checkbox" id="ob-${o.kljuc}" data-ob="${o.kljuc}" ${on ? 'checked' : ''}>
+      <label class="oblika-ime" for="ob-${o.kljuc}">${o.ime}</label>
+      <div class="oblika-opis">${o.opis}</div>${vnos}
+    </div>`;
+  }).join('');
+}
+
+document.addEventListener('change', e => {
+  const k = e.target.dataset && e.target.dataset.ob;
+  if (!k) return;
+  const o = OBLIKA.find(x => x.kljuc === k);
+  stanje.oblika = stanje.oblika || {};
+  // Besedilna nastavitev: vklop = predlagani stavek (prazen vnos ne bi nič spremenil).
+  if (o.besedilo) stanje.oblika[k] = e.target.checked ? o.vnosPh() : '';
+  else stanje.oblika[k] = e.target.checked;
+  renderOblika();
+});
+document.addEventListener('input', e => {
+  const k = e.target.dataset && e.target.dataset.vnos;
+  if (!k) return;
+  const o = OBLIKA.find(x => x.kljuc === k);
+  stanje.oblika = stanje.oblika || {};
+  // Prazen vnos pusti nastavitev vklopljeno (presledek); render.js ga obreže in izriše privzeti zaključek.
+  if (o.besedilo) stanje.oblika[k] = e.target.value || ' ';
+  else stanje.oblika[o.vnos] = e.target.value;
+});
+
+// Slovenska množina: 1 sprememba, 2 spremembi, 3 spremembe, 5 sprememb.
+function mnozina(n, [ena, dve, malo, vec]) {
+  const z = n % 100;
+  return `${n} ${z === 1 ? ena : z === 2 ? dve : z === 3 || z === 4 ? malo : vec}`;
+}
+
+// ── PREDOGLED IN KOMENTARJI (korak 4) ─────────────────────────────
+// Deli ponudbe, na katere se pripne komentar (data-cilj v predlogi ponudba-v2.html),
+// in polja v stanje, ki jih AI pri komentarju sme spremeniti.
+const CILJI = {
+  oznaka: { oznaka: 'Oznaka storitve', polja: ['STORITEV_BADGE'] },
+  glava: { oznaka: 'Glava ponudbe', polja: ['DATUM', 'STEVILKA_PONUDBE', 'IME_STRANKE', 'NASLOV_STRANKE', 'KONTAKTNA_OSEBA', 'TELEFON_STRANKE', 'DODATNI_META'] },
+  naslov: { oznaka: 'Naslov', polja: ['NASLOV'] },
+  podnaslov: { oznaka: 'Podnaslov', polja: ['PODNASLOV'] },
+  uvod: { oznaka: 'Zakaj ta storitev', polja: ['UVODNI_ODSTAVEK'] },
+  cene: { oznaka: 'Cenovna tabela', polja: ['storitve'] },
+  dodatna: { oznaka: 'Dodatna opcija', polja: ['dodatna_opcija'] },
+  predpostavke: { oznaka: 'Predpostavke', polja: ['PREDPOSTAVKE'] },
+  izkljucitve: { oznaka: 'V ceno ni zajeto', polja: ['IZKLUCITVE'] },
+  placilo: { oznaka: 'Plačilni pogoji', polja: ['PLACILNI_POGOJI', 'VELJAVNOST_PONUDBE'] },
+  zakljucek: { oznaka: 'Zaključek', polja: [] },
+  podpis: { oznaka: 'Podpis', polja: ['IME_KOMERCIALISTA', 'NAZIV_KOMERCIALISTA', 'EMAIL_KOMERCIALISTA', 'TELEFON_KOMERCIALISTA'] },
+  podjetje: { oznaka: 'O podjetju Acenta', polja: [] },
+  reference: { oznaka: 'Reference', polja: [] },
+};
+const CILJ_IZBIRNIK = '[data-korak],[data-storitev],[data-cilj]';
+
+let komentarji = [];        // { n, kljuc, oznaka, polja, besedilo, razlog? }
+let naslednjiKom = 1;
+let verzije = [];           // posnetki stanja pred vsakim uveljavljenim popravkom
+let predlog = null;         // odgovor /popravi: { spremembe, oblika, neizvedljivo }
+let odlocitve = [];         // true/false za vsako spremembo
+let oblikaOdl = [];         // true/false za vsako predlagano nastavitev
+let pvNacin = 'kom';        // 'kom' | 'spr'
+let pvOznake = true;
+let aktivniKom = null;
+let popCilj = null;
+let osveziCasovnik = null;
+
+const pvFrame = () => document.getElementById('pv-frame');
+const pvDoc = () => pvFrame().contentDocument;
+
+function opisCilja(el) {
+  const t = el && el.closest(CILJ_IZBIRNIK);
+  if (!t) return null;
+  const ponudba = pvNacin === 'spr' && predlog ? predlog.osnova : stanje;
+  if (t.dataset.korak) {
+    const k = t.dataset.korak;
+    return { kljuc: `korak-${k}`, sel: `[data-korak="${k}"]`, oznaka: `Korak ${k}`, polja: [`NASLOV_KORAK_${k}`, `KORAK_${k}`] };
+  }
+  if (t.dataset.faza != null && t.dataset.storitev != null) {
+    const i = t.dataset.storitev, f = t.dataset.faza;
+    const faza = ponudba.storitve?.[i]?.faze?.[f];
+    return { kljuc: `faza-${i}-${f}`, sel: `.faza-blok[data-storitev="${i}"][data-faza="${f}"]`, oznaka: `Faza: ${faza?.naslov || Number(f) + 1}`, polja: [`storitve.${i}.faze.${f}`, `storitve.${i}.vzpostavitev`] };
+  }
+  if (t.dataset.storitev != null) {
+    const i = t.dataset.storitev;
+    return { kljuc: `storitev-${i}`, sel: `.service-card[data-storitev="${i}"]`, oznaka: `Storitev: ${ponudba.storitve?.[i]?.naziv || Number(i) + 1}`, polja: [`storitve.${i}`] };
+  }
+  const c = CILJI[t.dataset.cilj];
+  if (!c) return null;
+  return { kljuc: t.dataset.cilj, sel: `[data-cilj="${t.dataset.cilj}"]`, oznaka: c.oznaka, polja: c.polja };
+}
+
+// Kateri del predogleda obarvati za spremembo na dani poti.
+function izbirnikZaPot(pot) {
+  const d = pot.split('.');
+  if (d[0] === 'storitve') {
+    if (/^(vzpostavitev|mesecno|opomba|naziv_tabela)$/.test(d[2] || '')) return '[data-cilj="cene"]';
+    if (d[2] === 'faze') return `.faza-blok[data-storitev="${d[1]}"][data-faza="${d[3]}"]`;
+    return `.service-card[data-storitev="${d[1]}"]`;
+  }
+  const k = /^(?:NASLOV_)?KORAK_(\d)$/.exec(d[0]);
+  if (k) return `[data-korak="${k[1]}"]`;
+  if (d[0] === 'dodatna_opcija') return '[data-cilj="dodatna"]';
+  for (const [kljuc, c] of Object.entries(CILJI)) if (c.polja.includes(d[0])) return `[data-cilj="${kljuc}"]`;
+  return null;
+}
+const IZBIRNIK_OBLIKE = { paketna_cena: '[data-cilj="cene"]', brez_ddv: '[data-cilj="cene"]', zakljucni_stavek: '[data-cilj="zakljucek"]', skrij_reference: null };
+
+function naprejNaPredogled() {
+  flushEdits();
+  pociistiStanje();
+  show('step-dokument', false);
+  show('step-predogled', true);
+  document.querySelector('.main').classList.add('siroko');
+  setStepActive(4);
+  pvNacin = 'kom';
+  prikaziPanel('kom');
+  renderKomentarje();
+  osveziPredogled(stanje);
+}
+
+function nazajNaUrejanje() {
+  zapriPop();
+  renderDoc();
+  renderOblika();
+  show('step-predogled', false);
+  show('step-dokument', true);
+  document.querySelector('.main').classList.remove('siroko');
+  document.getElementById('btn-pdf').classList.remove('hidden');
+  document.getElementById('pdf-box').classList.add('hidden');
+  setStepActive(3);
+}
+
+function prikaziPanel(kateri) {
+  ['kom', 'nalaga', 'spr'].forEach(p => show('pv-panel-' + p, p === kateri));
+}
+
+async function osveziPredogled(podatki) {
+  const page = document.getElementById('pv-page');
+  page.classList.add('nalaga');
+  try {
+    const res = await post('/predogled', podatki);
+    if (!res.ok) throw new Error(res.napaka);
+    const frame = pvFrame();
+    frame.onload = () => {
+      const doc = pvDoc();
+      pripraviPredogled(doc);
+      // Najprej skrči okvir, sicer scrollHeight krajše ponudbe ostane na višini prejšnje.
+      const prilagodi = () => { frame.style.height = '50px'; frame.style.height = doc.documentElement.scrollHeight + 'px'; oznaci(); };
+      prilagodi();
+      (doc.fonts ? doc.fonts.ready : Promise.resolve()).then(prilagodi);
+      setTimeout(prilagodi, 700);
+      page.classList.remove('nalaga');
+    };
+    frame.srcdoc = res.html;
+    const warn = document.getElementById('pv-opozorila');
+    warn.innerHTML = (res.opozorila || []).map(esc).join('<br>');
+    warn.classList.toggle('hidden', !(res.opozorila || []).length);
+    document.getElementById('pv-meta').textContent = `${podatki.STEVILKA_PONUDBE || 'Ponudba'} · ${podatki.IME_STRANKE || ''} · enako kot PDF`;
+  } catch (err) {
+    page.classList.remove('nalaga');
+    prikaziNapako(document.getElementById('pv-napaka'), 'Predogleda ni bilo mogoče izrisati: ' + err.message);
+  }
+}
+
+function pripraviPredogled(doc) {
+  const st = doc.createElement('style');
+  st.textContent = `
+    .pp-ov{position:absolute;z-index:50;font-family:'Segoe UI',Arial,sans-serif}
+    .pp-pin{width:24px;height:24px;border-radius:50%;background:#FF0A60;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid #fff}
+    .pp-pin.g{background:#1a7a4a;cursor:default}
+    .pp-box{border:2px dashed rgba(255,10,96,.55);border-radius:4px;pointer-events:none}
+    .pp-box.on{border-style:solid;border-color:#FF0A60;background:rgba(255,10,96,.04)}
+    .pp-chg{border:2px solid #1a7a4a;border-radius:4px;background:rgba(26,122,74,.05);pointer-events:none}
+    .pp-hover{outline:2px dashed #00AFAA !important;outline-offset:3px;cursor:pointer}`;
+  doc.head.appendChild(st);
+  let zadnji = null;
+  doc.addEventListener('mouseover', e => {
+    if (pvNacin !== 'kom') return;
+    const t = e.target.closest(CILJ_IZBIRNIK);
+    if (t === zadnji) return;
+    if (zadnji) zadnji.classList.remove('pp-hover');
+    zadnji = t;
+    if (t) t.classList.add('pp-hover');
+  });
+  doc.addEventListener('click', e => {
+    if (e.target.closest('a')) e.preventDefault();   // povezave v ponudbi v predogledu ne vodijo nikamor
+    if (pvNacin !== 'kom' || e.target.closest('.pp-ov')) return;
+    const cilj = opisCilja(e.target);
+    if (cilj) odpriPop(cilj);
+  });
+}
+
+// Oznake v predogledu: rdeče številke komentarjev (način kom) ali zelene spremembe (način spr).
+function oznaci() {
+  const doc = pvDoc();
+  if (!doc || !doc.body) return;
+  doc.querySelectorAll('.pp-ov').forEach(e => e.remove());
+  if (!pvOznake) return;
+  const y = doc.defaultView.scrollY;
+  const okvir = (cls, r) => dodajOv(doc, cls, { left: (r.left - 6) + 'px', top: (r.top + y - 6) + 'px', width: (r.width + 12) + 'px', height: (r.height + 12) + 'px' });
+  const zaSkupine = new Map();
+  const dodajVSkupino = (sel, n) => { if (!sel) return; if (!zaSkupine.has(sel)) zaSkupine.set(sel, []); zaSkupine.get(sel).push(n); };
+
+  if (pvNacin === 'kom') {
+    komentarji.forEach(k => { if (k.sel) dodajVSkupino(k.sel, k.n); });
+    zaSkupine.forEach((ns, sel) => {
+      const el = doc.querySelector(sel);
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      okvir('pp-box' + (ns.includes(aktivniKom) ? ' on' : ''), r);
+      ns.forEach((n, j) => {
+        const pin = dodajOv(doc, 'pp-pin', { left: (r.right - 4) + 'px', top: (r.top + y - 14 + j * 28) + 'px' }, String(n));
+        pin.addEventListener('click', () => { aktivniKom = n; renderKomentarje(); oznaci(); document.querySelector(`.cmt[data-n="${n}"]`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
+      });
+    });
+  } else if (predlog) {
+    predlog.spremembe.forEach((s, i) => { if (odlocitve[i]) dodajVSkupino(izbirnikZaPot(s.pot), s.komentar ?? '•'); });
+    predlog.oblika.forEach((o, i) => { if (oblikaOdl[i]) dodajVSkupino(IZBIRNIK_OBLIKE[o.nastavitev], o.komentar ?? '•'); });
+    zaSkupine.forEach((ns, sel) => {
+      const el = doc.querySelector(sel);
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      okvir('pp-chg', r);
+      [...new Set(ns)].forEach((n, j) => dodajOv(doc, 'pp-pin g', { left: (r.right - 4) + 'px', top: (r.top + y - 14 + j * 28) + 'px' }, String(n)));
+    });
+  }
+}
+
+function dodajOv(doc, cls, stil, html) {
+  const d = doc.createElement('div');
+  d.className = 'pp-ov ' + cls;
+  Object.assign(d.style, stil);
+  if (html != null) d.textContent = html;
+  doc.body.appendChild(d);
+  return d;
+}
+
+function preklopiOznake() {
+  pvOznake = !pvOznake;
+  document.getElementById('btn-oznake').textContent = pvOznake ? 'Skrij oznake' : 'Pokaži oznake';
+  oznaci();
+}
+
+// — Okence za komentar ob kliknjenem delu —
+function odpriPop(cilj) {
+  popCilj = cilj;
+  const el = pvDoc().querySelector(cilj.sel);
+  const r = el ? el.getBoundingClientRect() : { left: 40, bottom: 40 };
+  const pop = document.getElementById('pop');
+  document.getElementById('pop-del').textContent = cilj.oznaka;
+  document.getElementById('pop-text').value = '';
+  pop.style.left = Math.max(8, Math.min(r.left + 20, 794 - 340)) + 'px';
+  pop.style.top = (r.bottom + pvDoc().defaultView.scrollY + 8) + 'px';
+  pop.classList.remove('hidden');
+  document.getElementById('pop-text').focus();
+}
+function zapriPop() { document.getElementById('pop').classList.add('hidden'); popCilj = null; }
+
+function shraniKomentar() {
+  const t = document.getElementById('pop-text').value.trim();
+  if (!t || !popCilj) return zapriPop();
+  komentarji.push({ n: naslednjiKom++, kljuc: popCilj.kljuc, sel: popCilj.sel, oznaka: popCilj.oznaka, polja: popCilj.polja, besedilo: t });
+  zapriPop();
+  renderKomentarje();
+  oznaci();
+}
+
+function dodajSplosen() {
+  const el = document.getElementById('kom-splosen');
+  const t = el.value.trim();
+  if (!t) return;
+  komentarji.push({ n: naslednjiKom++, kljuc: 'splosno', sel: null, oznaka: 'Splošno', polja: [], besedilo: t });
+  el.value = '';
+  renderKomentarje();
+}
+
+function renderKomentarje() {
+  const sez = document.getElementById('kom-seznam');
+  sez.innerHTML = komentarji.length ? komentarji.map(k => `
+    <div class="cmt${aktivniKom === k.n ? ' on' : ''}${k.razlog ? ' neizveden' : ''}" data-n="${k.n}">
+      <div class="pin${k.sel ? '' : ' splosen'}">${k.n}</div>
+      <div class="cmt-del-ime">${esc(k.oznaka)}</div>
+      <div class="cmt-text${k.besedilo.length > 160 ? ' krajse' : ''}">${esc(k.besedilo)}</div>
+      ${k.razlog ? `<div class="cmt-razlog">Ni izvedeno: ${esc(k.razlog)}</div>` : ''}
+      <div class="cmt-akcije"><button class="povezava" data-uredi="${k.n}">Uredi</button><button class="povezava brisi" data-brisi="${k.n}">Briši</button></div>
+    </div>`).join('')
+    : '<div class="pv-empty">Še ni komentarjev.</div>';
+  document.getElementById('kom-st').textContent = komentarji.length;
+  const btn = document.getElementById('btn-popravi');
+  btn.disabled = !komentarji.length;
+  btn.textContent = komentarji.length ? `Popravi po komentarjih (${komentarji.length})` : 'Popravi po komentarjih';
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#kom-seznam')) return;
+  const brisi = e.target.closest('[data-brisi]');
+  if (brisi) {
+    komentarji = komentarji.filter(k => k.n !== Number(brisi.dataset.brisi));
+    renderKomentarje(); oznaci(); return;
+  }
+  const uredi = e.target.closest('[data-uredi]');
+  if (uredi) {
+    const k = komentarji.find(x => x.n === Number(uredi.dataset.uredi));
+    const box = uredi.closest('.cmt').querySelector('.cmt-text');
+    box.classList.remove('krajse');
+    box.innerHTML = `<textarea>${esc(k.besedilo)}</textarea><button class="btn btn-primary btn-sm" style="margin-top:6px">Shrani</button>`;
+    const ta = box.querySelector('textarea');
+    ta.focus();
+    box.querySelector('button').addEventListener('click', ev => { ev.stopPropagation(); k.besedilo = ta.value.trim() || k.besedilo; delete k.razlog; renderKomentarje(); });
+    box.addEventListener('click', ev => ev.stopPropagation());
+    return;
+  }
+  const card = e.target.closest('.cmt');
+  if (card && !e.target.closest('textarea')) {
+    aktivniKom = Number(card.dataset.n);
+    renderKomentarje(); oznaci();
+    const k = komentarji.find(x => x.n === aktivniKom);
+    const el = k && k.sel && pvDoc().querySelector(k.sel);
+    if (el) window.scrollTo({ top: pvFrame().getBoundingClientRect().top + window.scrollY + el.getBoundingClientRect().top - 120, behavior: 'smooth' });
+  }
+});
+
+// — AI popravki —
+async function popraviPoKomentarjih() {
+  if (!komentarji.length) return;
+  zapriPop();
+  document.getElementById('pv-napaka').classList.add('hidden');
+  prikaziPanel('nalaga');
+  const t0 = Date.now();
+  const txt = document.getElementById('pv-nalaga-text');
+  const tik = setInterval(() => { txt.textContent = `AI pripravlja popravke po ${komentarji.length} komentarjih … ${Math.round((Date.now() - t0) / 1000)} s`; }, 1000);
+  txt.textContent = `AI pripravlja popravke po ${komentarji.length} komentarjih …`;
+  try {
+    const res = await post('/popravi', {
+      podatki: stanje,
+      komentarji: komentarji.map(k => ({ n: k.n, del: k.oznaka, polja: k.polja, besedilo: k.besedilo }))
+    });
+    if (!res.ok) throw new Error(res.napaka);
+    predlog = { spremembe: res.spremembe || [], oblika: res.oblika || [], neizvedljivo: res.neizvedljivo || [], zavrnjenih: res.zavrnjenih || 0, osnova: JSON.parse(JSON.stringify(stanje)) };
+    // Spremembe izven komentiranega dela so privzeto zavrnjene: AI jih je naredil brez prošnje.
+    odlocitve = predlog.spremembe.map(s => !s.izven);
+    oblikaOdl = predlog.oblika.map(() => true);
+    pvNacin = 'spr';
+    prikaziPanel('spr');
+    renderSpremembe();
+    osveziPredogled(predlogStanja());
+  } catch (err) {
+    prikaziPanel('kom');
+    prikaziNapako(document.getElementById('pv-napaka'), 'Popravki niso uspeli: ' + err.message);
+  } finally {
+    clearInterval(tik);
+  }
+}
+
+const OBLIKA_IME = Object.fromEntries(OBLIKA.map(o => [o.kljuc, o.ime]));
+
+function renderSpremembe() {
+  const p = predlog;
+  const nVsebina = p.spremembe.length, nOblika = p.oblika.length;
+  document.getElementById('spr-povzetek').innerHTML = (nVsebina || nOblika)
+    ? `<b>${mnozina(nVsebina, ['sprememba', 'spremembi', 'spremembe', 'sprememb'])} vsebine</b> in <b>${mnozina(nOblika, ['nastavitev', 'nastavitvi', 'nastavitve', 'nastavitev'])} oblike</b>. Na levi so spremenjeni deli označeni z zeleno. Nič ni uveljavljeno, dokler ne potrdiš.`
+    : 'AI ni predlagal nobene spremembe. Preveri spodnje razloge ali preoblikuj komentarje.';
+  let h = '';
+  if (nVsebina) {
+    h += '<div class="pv-grp">Vsebina</div>';
+    h += p.spremembe.map((s, i) => `
+      <div class="chg${odlocitve[i] ? '' : ' zavrnjena'}">
+        <div class="chg-glava"><div class="chg-del">${esc(s.oznaka)}</div>
+          <div class="chg-ref">· ${s.komentar ? 'komentar ' + s.komentar : 'brez komentarja'}</div>
+          ${s.je_cena ? '<div class="zastavica">Sprememba cene</div>' : ''}
+          ${s.izven ? '<div class="zastavica">Izven komentiranega dela</div>' : ''}
+          ${s.operacija === 'dodaj' ? '<div class="chg-ref">nova vrstica</div>' : ''}${s.operacija === 'odstrani' ? '<div class="chg-ref">odstranitev</div>' : ''}
+        </div>
+        ${s.prej ? `<div class="chg-lbl">Prej</div><div class="chg-prej${s.prej.length > 220 ? ' krajse' : ''}" title="Klikni za celo besedilo">${esc(s.prej)}</div>` : ''}
+        ${s.potem ? `<div class="chg-lbl">Potem</div><div class="chg-potem">${esc(s.potem)}</div>` : ''}
+        ${s.opis ? `<div class="chg-opis">${esc(s.opis)}</div>` : ''}
+        <div class="chg-akcije">
+          <button class="chip da${odlocitve[i] ? ' on' : ''}" data-da="${i}">Sprejmi</button>
+          <button class="chip ne${odlocitve[i] ? '' : ' on'}" data-ne="${i}">Zavrni</button>
+        </div>
+      </div>`).join('');
+  }
+  if (nOblika) {
+    h += '<div class="pv-grp">Oblika ponudbe</div>';
+    h += p.oblika.map((o, i) => `
+      <label class="opt">
+        <input type="checkbox" data-opt="${i}" ${oblikaOdl[i] ? 'checked' : ''}>
+        <div class="opt-ime">${o.vklopi ? '' : 'Izklopi: '}${esc(OBLIKA_IME[o.nastavitev] || o.nastavitev)} <span class="chg-ref">· ${o.komentar ? 'komentar ' + o.komentar : ''}</span></div>
+        <div class="opt-opis">${esc(o.nastavitev === 'zakljucni_stavek' && o.vklopi ? '»' + (o.besedilo || OBLIKA[1].vnosPh()) + '«' : (OBLIKA.find(x => x.kljuc === o.nastavitev)?.opis || ''))}</div>
+      </label>`).join('');
+  }
+  if (p.neizvedljivo.length) {
+    h += '<div class="pv-grp">Ni izvedeno</div>';
+    h += p.neizvedljivo.map(x => `<div class="nei"><b>${x.komentar ? 'Komentar ' + x.komentar : 'Komentar'}:</b> ${esc(x.razlog)}</div>`).join('');
+  }
+  if (p.zavrnjenih) h += `<div class="pv-note" style="margin-top:8px;">${p.zavrnjenih} predlogov je app zavrnil, ker niso kazali na obstoječe polje ponudbe.</div>`;
+  document.getElementById('spr-seznam').innerHTML = h;
+  const nDa = odlocitve.filter(Boolean).length, nOb = oblikaOdl.filter(Boolean).length;
+  document.getElementById('spr-stevec').textContent = `Sprejetih ${nDa} od ${nVsebina} sprememb vsebine, ${nOb} od ${nOblika} nastavitev`;
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#spr-seznam')) return;
+  const prej = e.target.closest('.chg-prej');
+  if (prej) { prej.classList.toggle('krajse'); return; }
+  const da = e.target.closest('[data-da]'), ne = e.target.closest('[data-ne]');
+  if (!da && !ne) return;
+  odlocitve[Number((da || ne).dataset[da ? 'da' : 'ne'])] = Boolean(da);
+  renderSpremembe();
+  osveziPredlogZamik();
+});
+document.addEventListener('change', e => {
+  const i = e.target.dataset && e.target.dataset.opt;
+  if (i == null) return;
+  oblikaOdl[Number(i)] = e.target.checked;
+  renderSpremembe();
+  osveziPredlogZamik();
+});
+
+function osveziPredlogZamik() {
+  clearTimeout(osveziCasovnik);
+  osveziCasovnik = setTimeout(() => osveziPredogled(predlogStanja()), 350);
+}
+
+// Stanje s sprejetimi spremembami (čista funkcija nad posnetkom osnove).
+// Vrstni red: najprej nastavi, nato odstrani (od zadaj, da indeksi ostanejo veljavni), nato dodaj.
+function predlogStanja() {
+  const p = JSON.parse(JSON.stringify(predlog.osnova));
+  const sprejete = predlog.spremembe.filter((_, i) => odlocitve[i]);
+  sprejete.filter(s => s.operacija === 'nastavi').forEach(s => setByPath(p, s.pot, s.potem));
+  sprejete.filter(s => s.operacija === 'odstrani')
+    .map(s => ({ stars: s.pot.replace(/\.\d+$/, ''), idx: Number(s.pot.split('.').pop()) }))
+    .sort((a, b) => (a.stars === b.stars ? b.idx - a.idx : a.stars < b.stars ? -1 : 1))
+    .forEach(({ stars, idx }) => { const arr = getByPath(p, stars); if (Array.isArray(arr)) arr.splice(idx, 1); });
+  sprejete.filter(s => s.operacija === 'dodaj').forEach(s => {
+    if (!Array.isArray(getByPath(p, s.pot))) setByPath(p, s.pot, []);
+    getByPath(p, s.pot).push(s.potem);
+  });
+  p.oblika = { ...(p.oblika || {}) };
+  predlog.oblika.forEach((o, i) => {
+    if (!oblikaOdl[i]) return;
+    if (o.nastavitev === 'zakljucni_stavek') p.oblika.zakljucni_stavek = o.vklopi ? (o.besedilo || OBLIKA[1].vnosPh()) : '';
+    else p.oblika[o.nastavitev] = o.vklopi;
+  });
+  return p;
+}
+
+function uveljaviPredlog() {
+  verzije.push(JSON.parse(JSON.stringify(predlog.osnova)));
+  stanje = predlogStanja();
+  // Izvedeni komentarji gredo s seznama; neizvedeni ostanejo z razlogom.
+  const izvedeni = new Set([
+    ...predlog.spremembe.filter((_, i) => odlocitve[i]).map(s => s.komentar),
+    ...predlog.oblika.filter((_, i) => oblikaOdl[i]).map(o => o.komentar)
+  ]);
+  const razlogi = new Map(predlog.neizvedljivo.map(x => [x.komentar, x.razlog]));
+  komentarji = komentarji.filter(k => !izvedeni.has(k.n)).map(k => ({ ...k, razlog: razlogi.get(k.n) || k.razlog || 'AI za ta komentar ni predlagal spremembe.' }));
+  predlog = null;
+  renderDoc();       // skrit urejevalnik mora slediti stanju, sicer bi flushEdits povozil popravke
+  renderOblika();
+  zakljuciPredlog();
+}
+
+function nazajNaKomentarje() { predlog = null; zakljuciPredlog(); }
+
+function zavrniVse() {
+  odlocitve = odlocitve.map(() => false);
+  oblikaOdl = oblikaOdl.map(() => false);
+  renderSpremembe();
+  osveziPredlogZamik();
+}
+
+function zakljuciPredlog() {
+  pvNacin = 'kom';
+  aktivniKom = null;
+  prikaziPanel('kom');
+  renderKomentarje();
+  document.getElementById('pv-verzija').textContent = `verzija ${verzije.length + 1}`;
+  document.getElementById('btn-razveljavi').classList.toggle('hidden', !verzije.length);
+  osveziPredogled(stanje);
+}
+
+function razveljaviVerzijo() {
+  if (!verzije.length) return;
+  stanje = verzije.pop();
+  renderDoc();
+  renderOblika();
+  zakljuciPredlog();
+}
+
+async function prenesiPdfPredogled() {
+  const btn = document.getElementById('btn-pv-pdf');
+  btn.disabled = true;
+  btn.textContent = 'Pripravljam PDF …';
+  try {
+    pociistiStanje();
+    const res = await post('/generiraj-pdf', stanje);
+    if (!res.ok) throw new Error(res.napaka);
+    const a = document.createElement('a');
+    a.href = '/prenesi/pdf/' + res.datoteka;
+    a.download = res.datoteka;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } catch (err) {
+    prikaziNapako(document.getElementById('pv-napaka'), 'PDF ni uspel: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Prenesi PDF';
+  }
+}
+
+window.addEventListener('resize', () => { if (!document.getElementById('step-predogled').classList.contains('hidden')) oznaci(); });
+
 // ── NAVIGACIJA ────────────────────────────────────────────────────
 function nazajNaVnos() {
   show('step-forma', false);
@@ -1039,7 +1745,7 @@ function show(id, vidno) {
 }
 
 function setStepActive(n) {
-  [1,2,3].forEach(i => {
+  [1,2,3,4].forEach(i => {
     const el = document.getElementById('step-ind-' + i);
     el.classList.toggle('active', i === n);
     el.classList.toggle('done', i < n);

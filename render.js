@@ -1,9 +1,10 @@
 // render.js — Acenta ponudba renderer
-// Uporaba: node --env-file=.env render.js word|pdf
+// Uporaba: node --env-file=.env render.js word|pdf|html
 //
-// Bere:  data/ponudba.json  (pripravi ga Claude Code skill)
+// Bere:  PONUDBA_JSON (env) ali data/ponudba.json
 // Piše:  Word → OSNUTKI_MAPA  (env var ali ./output/osnutki)
 //        PDF  → IZHOD_MAPA    (env var ali ./output)
+//        HTML → HTML_OUT      (env var ali ./output/predogled.html) — predogled v appu, enak kot PDF
 
 import HTMLtoDOCX from 'html-to-docx';
 import puppeteer from 'puppeteer';
@@ -11,20 +12,24 @@ import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { resolve } from 'path';
 
 const ukaz = process.argv[2];
-if (!ukaz || !['word', 'pdf'].includes(ukaz)) {
-  console.error('Napaka: poda render.js word ali render.js pdf');
+if (!ukaz || !['word', 'pdf', 'html'].includes(ukaz)) {
+  console.error('Napaka: poda render.js word, pdf ali html');
   process.exit(1);
 }
 
 // ── BERI JSON ────────────────────────────────────────────────────
-const jsonPot = resolve(process.cwd(), 'data/ponudba.json');
+const jsonPot = process.env.PONUDBA_JSON || resolve(process.cwd(), 'data/ponudba.json');
 const podatki = JSON.parse(readFileSync(jsonPot, 'utf8'));
+
+// Nastavitve oblike (korak Dokument / Predogled). Vse privzeto izklopljene = predloga kot prej.
+const oblika = podatki.oblika && typeof podatki.oblika === 'object' ? podatki.oblika : {};
+const zakljucniStavek = typeof oblika.zakljucni_stavek === 'string' ? oblika.zakljucni_stavek.trim() : '';
 
 // ── PRETVORI storitve[] → HTML bloke ─────────────────────────────
 if (Array.isArray(podatki.storitve)) {
 
   // PDF kartice (CSS grid)
-  podatki.KARTICE_STORITEV = podatki.storitve.map(s => {
+  podatki.KARTICE_STORITEV = podatki.storitve.map((s, i) => {
     // Neobvezni opisni odstavki (prosta vsebina iz popravljenega Worda)
     const opisArr = Array.isArray(s.opis) ? s.opis : (s.opis ? [s.opis] : []);
     const opisHtml = opisArr.map(p => `<p class="card-desc">${p}</p>`).join('');
@@ -47,7 +52,7 @@ if (Array.isArray(podatki.storitve)) {
     // Velike kartice (z OBSEG blokom) smejo teči čez strani, da ne puščajo lukenj
     const karticaClass = obsegHtml ? 'service-card service-card--tall' : 'service-card';
     return `
-    <div class="${karticaClass}">
+    <div class="${karticaClass}" data-storitev="${i}">
       <div class="card-title">${s.naziv || ''}</div>
       <div class="card-subtitle">${s.podnaslov || ''}</div>
       ${opisHtml}
@@ -104,8 +109,10 @@ if (Array.isArray(podatki.storitve)) {
     </tr>`;
   }).join('');
 
+  // Ročno združevanje tisočic: sl-SI v Intl štirimestnih zneskov ne združi ("1648,00 €"),
+  // cenik in ponudbe pa pišejo "1.648,00 €".
   const formatEur = n =>
-    n.toLocaleString('sl-SI', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+    n.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' €';
 
   // Prava cena = SAMO številka v obliki "190,00 €" / "17,00 EUR/mes." (brez opisnih besed).
   // Opisne vrednosti ("od 19 dalje", "od 250 do 900 EUR") se v seštevek NE štejejo —
@@ -152,19 +159,77 @@ if (Array.isArray(podatki.storitve)) {
   if (skupajMes.imeloOpisne) {
     ddvInfo += (ddvInfo ? ' · ' : '') + '+ variabilni in opcijski stroški (glej opombe)';
   }
+  // Nastavitev "Cene samo brez DDV": znesek DDV in cena z DDV izpadeta, pod tabelo ostane opomba.
+  const ddvOpomba = 'Cene so brez DDV (22 %).';
+  if (oblika.brez_ddv) {
+    ddvInfo = skupajMes.imeloOpisne ? '+ variabilni in opcijski stroški (glej opombe)' : '';
+  }
   podatki.SKUPAJ_DDV_INFO = ddvInfo;
+
+  // ── CENOVNA TABELA ─────────────────────────────────────────────
+  // Privzeto: vrstica na storitev (Storitev | Vzpostavitev | Mesečno | Opomba).
+  // Nastavitev "Paketna cena": ena vrstica s skupno ceno paketa, brez postavk.
+  if (oblika.paketna_cena) {
+    const paketNaziv = (oblika.paket_naziv || '').trim()
+      || `Paket: ${podatki.NASLOV || podatki.STORITEV_BADGE || 'storitve'}`;
+    const imaMesecno = Boolean(podatki.SKUPAJ_MESECNO);
+    const cols = imaMesecno
+      ? '<col style="width:52%"><col style="width:24%"><col style="width:24%">'
+      : '<col style="width:68%"><col style="width:32%">';
+    const glava = imaMesecno ? '<th>Storitev</th><th>Enkratno</th><th>Mesečno</th>' : '<th>Storitev</th><th>Cena</th>';
+    const celice = imaMesecno
+      ? `<td>${podatki.SKUPAJ_VZPOSTAVITEV}</td><td>${podatki.SKUPAJ_MESECNO}</td>`
+      : `<td>${podatki.SKUPAJ_VZPOSTAVITEV}</td>`;
+    podatki.CENOVNA_TABELA = `<table class="price-table price-table--paket">
+        <colgroup>${cols}</colgroup>
+        <thead><tr>${glava}</tr></thead>
+        <tbody>
+          <tr><td>${paketNaziv}</td>${celice}</tr>
+          <tr class="total-row"><td>SKUPAJ</td>${celice}</tr>
+        </tbody>
+      </table>`;
+    // Paket nima stolpca za DDV: informacija gre v opombo pod tabelo.
+    podatki.CENE_OPOMBA = `<p class="price-note">${oblika.brez_ddv ? ddvOpomba : (ddvInfo || ddvOpomba)}</p>`;
+  } else {
+    podatki.CENOVNA_TABELA = `<table class="price-table">
+        <colgroup>
+          <col style="width:23%">
+          <col style="width:19%">
+          <col style="width:22%">
+          <col style="width:36%">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Storitev</th>
+            <th>Vzpostavitev (1x)</th>
+            <th>Mesečno</th>
+            <th>Opomba</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${podatki.VRSTICE_CEN}
+          <tr class="total-row">
+            <td>SKUPAJ</td>
+            <td>${podatki.SKUPAJ_VZPOSTAVITEV}</td>
+            <td>${podatki.SKUPAJ_MESECNO}</td>
+            <td class="total-ddv">${podatki.SKUPAJ_DDV_INFO}</td>
+          </tr>
+        </tbody>
+      </table>`;
+    podatki.CENE_OPOMBA = oblika.brez_ddv ? `<p class="price-note">${ddvOpomba}</p>` : '';
+  }
 
   // ── FAZNI BLOK (samo za projektne storitve s poljem "faze") ────
   let fazniBlok = '';
   let fazniBlokWord = '';
 
-  podatki.storitve.forEach(s => {
+  podatki.storitve.forEach((s, si) => {
     if (!Array.isArray(s.faze) || s.faze.length === 0) return;
 
     fazniBlok += `<div class="storitev-naslov">${s.naziv || ''}</div>`;
     fazniBlokWord += `<p style="font-size:12pt;font-weight:bold;color:#0B0F10;margin:18px 0 8px 0;">${s.naziv || ''}</p>`;
 
-    s.faze.forEach(faza => {
+    s.faze.forEach((faza, fi) => {
       const naloge = faza.naloge || [];
       // Stolpec "Ur" prikažemo SAMO, če faza dejansko ima ure. Če jih je človek
       // v popravljenem Wordu odstranil, jih izpustimo tudi tu (zvestoba dokumentu).
@@ -179,7 +244,7 @@ if (Array.isArray(podatki.storitve)) {
         </tr>`).join('');
 
       fazniBlok += `
-        <div class="faza-blok">
+        <div class="faza-blok" data-storitev="${si}" data-faza="${fi}">
           <div class="faza-glava">
             <div class="faza-naslov">${faza.naslov || ''}</div>
             ${faza.trajanje ? `<div class="faza-trajanje">Trajanje: ${faza.trajanje}</div>` : ''}
@@ -227,9 +292,12 @@ if (Array.isArray(podatki.storitve)) {
     });
   });
 
-  podatki.FAZNI_BLOK_HTML = fazniBlok;
+  // Paketna cena skrije tudi fazne tabele: tudi te bi pokazale postavke.
+  podatki.FAZNI_BLOK_HTML = oblika.paketna_cena ? '' : fazniBlok;
   podatki.FAZNI_BLOK_HTML_WORD = fazniBlokWord;
 }
+if (podatki.CENOVNA_TABELA === undefined) podatki.CENOVNA_TABELA = '';
+if (podatki.CENE_OPOMBA === undefined) podatki.CENE_OPOMBA = '';
 
 // ── DODATNA OPCIJA (neobvezen prosti blok v cenovni strukturi) ───
 // Vir: prosta vsebina iz Worda (npr. "Dodatna opcija — Mesečni pregled").
@@ -242,7 +310,7 @@ if (dop && (dop.uvod || (Array.isArray(dop.tocke) && dop.tocke.length))) {
     : (dop.investicija ? [dop.investicija] : []);
   const investicija = investicijaArr.map(i => `<div class="dop-inv-row">${i}</div>`).join('');
   podatki.DODATNA_OPCIJA_HTML = `
-  <div class="dodatna-opcija">
+  <div class="dodatna-opcija" data-cilj="dodatna">
     <div class="dop-naslov">${dop.naslov || 'Dodatna opcija'}</div>
     ${dop.uvod ? `<p class="dop-uvod">${dop.uvod}</p>` : ''}
     ${tocke ? `<ul class="dop-list">${tocke}</ul>` : ''}
@@ -296,12 +364,13 @@ for (let i = 1; i <= 4; i++) {
   const naslov = (podatki[`NASLOV_KORAK_${i}`] || '').trim();
   const opis   = (podatki[`KORAK_${i}`] || '').trim();
   if (!naslov && !opis) continue; // prazen korak → izpusti (nič izmišljenega)
-  koraki.push({ naslov: naslov || privzetiKorakNaslov[i - 1], opis });
+  koraki.push({ naslov: naslov || privzetiKorakNaslov[i - 1], opis, polje: i });
 }
 
 if (koraki.length) {
+  // data-korak = številka polja (KORAK_n), ne prikazana številka: prazni koraki izpadejo.
   const korakStep = (k, n) => `
-        <div class="process-step">
+        <div class="process-step" data-korak="${k.polje}">
           <div class="step-circle">${n}</div>
           <div class="step-content">
             <div class="step-label">Korak ${n}</div>
@@ -375,9 +444,9 @@ const veljavnost     = podatki.VELJAVNOST_PONUDBE || '30 dni';
 let pogPdf = '';
 if (predpostavke || izklucitve || placilniPogoji) {
   pogPdf = '<div class="conditions-block">';
-  if (predpostavke) pogPdf += `<div class="conditions-box"><div class="cond-title">Predpostavke</div><div class="cond-text">${predpostavke}</div></div>`;
-  if (izklucitve)   pogPdf += `<div class="conditions-box conditions-excl"><div class="cond-title">V ceno ni zajeto</div><div class="cond-text">${izklucitve}</div></div>`;
-  pogPdf += `<div class="conditions-box conditions-pay"><div class="cond-title">Plačilni pogoji</div><div class="cond-text">${placilniPogoji || 'Po dogovoru.'}<br><span style="font-size:8pt;color:#aaa;">Veljavnost: ${veljavnost}</span></div></div>`;
+  if (predpostavke) pogPdf += `<div class="conditions-box" data-cilj="predpostavke"><div class="cond-title">Predpostavke</div><div class="cond-text">${predpostavke}</div></div>`;
+  if (izklucitve)   pogPdf += `<div class="conditions-box conditions-excl" data-cilj="izkljucitve"><div class="cond-title">V ceno ni zajeto</div><div class="cond-text">${izklucitve}</div></div>`;
+  pogPdf += `<div class="conditions-box conditions-pay" data-cilj="placilo"><div class="cond-title">Plačilni pogoji</div><div class="cond-text">${placilniPogoji || 'Po dogovoru.'}<br><span style="font-size:8pt;color:#aaa;">Veljavnost: ${veljavnost}</span></div></div>`;
   pogPdf += '</div>';
 }
 podatki.POGOJI_HTML = pogPdf;
@@ -401,7 +470,23 @@ for (const [k, v] of Object.entries(podatki)) {
   if (typeof v === 'string') html = html.replaceAll(`{{${k}}}`, v);
 }
 
+// Nastavitvi "Svoj zaključni stavek" in "Skrij reference": bloka sta v predlogi med oznakami.
+if (zakljucniStavek) {
+  html = html.replace(/<!-- CTA:ZACETEK -->[\s\S]*?<!-- CTA:KONEC -->/,
+    `<p class="cta-text" style="margin:0">${zakljucniStavek}</p>`);
+}
+if (oblika.skrij_reference) {
+  html = html.replace(/<!-- REFERENCE:ZACETEK -->[\s\S]*?<!-- REFERENCE:KONEC -->/, '');
+}
+
 const ime = (podatki.IME_STRANKE || 'ponudba').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+
+// ── HTML (predogled v appu) ──────────────────────────────────────
+if (ukaz === 'html') {
+  const htmlPot = process.env.HTML_OUT || resolve(process.cwd(), 'output/predogled.html');
+  writeFileSync(htmlPot, html);
+  console.log(`✓ HTML: ${htmlPot}`);
+}
 
 // ── WORD ─────────────────────────────────────────────────────────
 if (ukaz === 'word') {
