@@ -92,9 +92,9 @@ Vrni JSON točno v tej obliki:
   "IZKLUCITVE": "kaj ni vključeno ali prazno",
   "PLACILNI_POGOJI": "plačilni pogoji ali prazno",
   "VELJAVNOST_PONUDBE": "15 dni ali 30 dni",
-  "IME_KOMERCIALISTA": "Mateja",
-  "NAZIV_KOMERCIALISTA": "Komercialistka",
-  "EMAIL_KOMERCIALISTA": "mateja@acenta.si",
+  "IME_KOMERCIALISTA": "Matjaž Kristan",
+  "NAZIV_KOMERCIALISTA": "Vodja marketinga in prodaje",
+  "EMAIL_KOMERCIALISTA": "matjaz@acenta.si",
   "TELEFON_KOMERCIALISTA": "telefon ali prazno",
   "storitve": [
     {
@@ -299,6 +299,15 @@ Polje "ure" izpolni SAMO, če je ura dejansko zapisana ob tej nalogi v dokumentu
 // predpostavke in odprta vprašanja se vrnejo v UI kot opozorila.
 const AI_VZOREC = /\b(ai|umetn\w*\s+intelig\w*|implementac\w*|avtomatiz\w*|agent\w*|chatbot\w*|asistent\w*|delavnic\w*)\b/i;
 
+// Urne postavke iz Metakocke (preverjeno 2. 10. 2026, enake kot v ceniku). Ocena vsako nalogo
+// obračuna po postavki za tisto vrsto dela, da se cena med zagoni ne razlikuje zaradi izbire postavke.
+const URNE_POSTAVKE = `URNE POSTAVKE (vsako nalogo obračunaj po postavki za njeno vrsto dela):
+   - razvoj, programiranje, postavitev, integracije, prenos vsebin, testiranje: DS1540 Programerska ura 66,00 EUR/h
+   - oblikovanje, dizajn, priprava vizualov: OBL2365 Oblikovalska ura 50,00 EUR/h
+   - vodenje projekta, usklajevanje, komunikacija s stranko: DS2242 Vodenje projekta ali podpora projektu 77,00 EUR/h
+   - svetovanje, analiza, načrtovanje, izobraževanje, delavnice: DS2241 Svetovalna ura 71,50 EUR/h
+   Druge postavke uporabi samo, če cenik za to delo ima svojo. Nikoli ne izmišljuj urne postavke.`;
+
 // Unikatna ponudba ima vedno časovnico (plan dela iz faz); skupno pravilo za oba razgradnja prompta.
 const CASOVNICA_PRAVILO = `ČASOVNICA: izpolni polje "casovnica" s 3 do 6 vrsticami, ki sledijo fazam.
    "obdobje" zapiši relativno od potrditve ponudbe (npr. "1. in 2. teden", "3. teden",
@@ -373,8 +382,9 @@ METODA (izvedi po vrsti):
    naloga "Popis procesov".
    DOBRO: "1. faza: Popis procesa odgovarjanja na povpraševanja in rezervacije",
    naloga "Intervju z receptorko in popis poteka od e-maila do potrditve rezervacije".
-4. Izračunaj cene: ure naloge krat urna postavka iz cenika (če urne postavke v
-   ceniku ni, uporabi 100 EUR/h in to zabeleži v "interna_opozorila"). Nato preveri
+4. Izračunaj cene: ure naloge krat urna postavka za vrsto dela.
+   ${URNE_POSTAVKE}
+   Nato preveri
    seštevke: naloge se seštejejo v "skupaj_ure" in "skupaj_vrednost" faze; vse faze
    se seštejejo v "vzpostavitev" storitve. Če se ne ujema, popravi ure ali vrednosti,
    NE prilagajaj končne cene na roko.
@@ -407,8 +417,8 @@ PRAVILA CEN IN VSEBINE:
 - NIKOLI ne uporabljaj — (em dash). VEDNO šumniki č, š, ž (zaračuna, vključena,
   poročilo, naročnik, število, časa). "inženiring", ne "inžiniring". Imena podjetij,
   oseb in orodij pusti v obliki iz scoping JSON-a.
-- Privzeti podpisnik: IME_KOMERCIALISTA "Mateja", NAZIV_KOMERCIALISTA "Komercialistka",
-  EMAIL_KOMERCIALISTA "mateja@acenta.si".
+- Privzeti podpisnik: IME_KOMERCIALISTA "Matjaž Kristan", NAZIV_KOMERCIALISTA "Vodja marketinga in prodaje",
+  EMAIL_KOMERCIALISTA "matjaz@acenta.si".
 - OPOMBA_CENE: "Oglaševalski proračun pri Googlu in Meta se zaračuna neposredno pri ponudniku in ni vključen v zgornje cene."
 
 SAMOKONTROLA pred oddajo (vse tri točke morajo držati):
@@ -475,9 +485,14 @@ METODA:
    testiranje in objava). Ne uporabi 3 faz samo zato, ker je to privzeto.
 3. Faze in naloge poimenuj s strankinimi sklopi in sistemi, ne generično.
    SLABO: "2. faza: izvedba". DOBRO: "2. faza: Izvedba dizajna za oba hotela v štirih jezikih".
-4. Cene: ure naloge krat urna postavka iz cenika (če je ni, 100 EUR/h in zabeleži v
-   "interna_opozorila"). Naloge se seštejejo v "skupaj_ure" in "skupaj_vrednost" faze,
-   vse faze v "vzpostavitev" storitve. Če se ne ujema, popravi ure, ne končne cene na roko.
+4. Cene: ure naloge krat urna postavka za vrsto dela (spodaj). Naloge se seštejejo v
+   "skupaj_ure" in "skupaj_vrednost" faze, vse faze v "vzpostavitev" storitve. Če se ne
+   ujema, popravi ure, ne končne cene na roko.
+   ${URNE_POSTAVKE}
+   PRIMERJALNA TOČKA za spletno stran po meri: Acentin paket SS2399 "Izdelava spletne strani"
+   obsega 50 h programiranja in 7,5 h vodenja projekta. Ure prilagodi obsegu (jeziki, število
+   tipov strani, integracije), a če tvoja ocena za podobno stran odstopa za več kot tretjino,
+   to z razlogom zapiši v "interna_opozorila".
 5. "trajanje" faze zapiši v tednih (npr. "2 tedna"), skupno koledarsko trajanje omeni v
    "opomba" storitve (npr. "Koledarsko 4 do 6 tednov od potrjenega dizajna").
 6. "standardne_storitve" iz scopinga obravnavaj klasično: cene in opisi iz cenika, "faze": [].
@@ -496,8 +511,8 @@ PRAVILA CEN IN VSEBINE:
 - "UVODNI_ODSTAVEK": 3-4 stavki, imenuj konkreten cilj ali sklop stranke, brez splošnih fraz.
 - "dodatna_opcija" izpolni SAMO za sklop, ki ga stranka ni potrdila kot obveznega.
 - NIKOLI ne uporabljaj — (em dash). VEDNO šumniki č, š, ž. Imena pusti v obliki iz scopinga.
-- Privzeti podpisnik: IME_KOMERCIALISTA "Mateja", NAZIV_KOMERCIALISTA "Komercialistka",
-  EMAIL_KOMERCIALISTA "mateja@acenta.si".
+- Privzeti podpisnik: IME_KOMERCIALISTA "Matjaž Kristan", NAZIV_KOMERCIALISTA "Vodja marketinga in prodaje",
+  EMAIL_KOMERCIALISTA "matjaz@acenta.si".
 
 SAMOKONTROLA pred oddajo:
 1. PREPOZNAVNOST: ali bi faze lahko poslal drugi stranki brez sprememb? Če DA, prepiši.
