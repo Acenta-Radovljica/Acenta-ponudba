@@ -202,6 +202,17 @@
   .doc-dodatna { border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 6px; padding: 14px 16px; margin-top: 12px; }
   .doc-dodatna .doc-card-naziv { color: var(--accent); }
 
+  /* VRSTA PONUDBE (korak 1) */
+  .vrsta-naslov { font-size: 11px; font-weight: 700; color: var(--gray); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+  .vrsta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 22px; }
+  .vrsta-opt { border: 2px solid var(--border); border-radius: 8px; padding: 12px 14px; cursor: pointer; background: #fff; text-align: left; font-family: inherit; color: var(--dark); transition: border-color .15s; }
+  .vrsta-opt:hover { border-color: var(--teal); }
+  .vrsta-opt.active { border-color: var(--teal); background: #f0fefe; }
+  .vrsta-ime { font-size: 14px; font-weight: 700; }
+  .vrsta-opt.active .vrsta-ime { color: var(--teal); }
+  .vrsta-opis { font-size: 12px; color: var(--gray); margin-top: 3px; line-height: 1.5; }
+  @media (max-width: 600px) { .vrsta { grid-template-columns: 1fr; } }
+
   /* OBLIKA PONUDBE (korak 3) */
   .oblika-box { border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; margin-top: 18px; background: #fafcfc; }
   .oblika-naslov { font-size: 11px; font-weight: 800; color: var(--teal); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
@@ -326,6 +337,18 @@
   <div id="step-vnos">
     <div class="card">
       <div class="card-title">Vnos podatkov <span>—</span> PDF ali besedilo</div>
+
+      <div class="vrsta-naslov">Vrsta ponudbe</div>
+      <div class="vrsta" role="radiogroup" aria-label="Vrsta ponudbe">
+        <button type="button" class="vrsta-opt active" data-vrsta="tipska" role="radio" aria-checked="true" onclick="izberiVrsto('tipska')">
+          <div class="vrsta-ime">Tipska</div>
+          <div class="vrsta-opis">Postavke in cene iz cenika (Metakocka). Za Google Ads, Meta, SEO in druge storitve po ceniku.</div>
+        </button>
+        <button type="button" class="vrsta-opt" data-vrsta="unikatna" role="radio" aria-checked="false" onclick="izberiVrsto('unikatna')">
+          <div class="vrsta-ime">Unikatna</div>
+          <div class="vrsta-opis">Ocena po fazah in urah s časovnico. Za spletne strani, razvoj in AI projekte po meri.</div>
+        </button>
+      </div>
 
       <div class="tabs">
         <button class="tab active" onclick="switchTab('pdf')">Naloži dokument</button>
@@ -655,6 +678,16 @@ let aktivniTab = 'pdf';
 let nalozenaDatoteka = null;   // { vrsta: 'pdf'|'docx'|'txt', vsebina }
 let storitevIndex = 0;
 let stanje = {};               // kanonični objekt ponudbe — edini vir resnice za dokument
+let vrstaPonudbe = 'tipska';   // 'tipska' (cenik) | 'unikatna' (ocena po fazah in urah)
+
+function izberiVrsto(v) {
+  vrstaPonudbe = v;
+  document.querySelectorAll('.vrsta-opt').forEach(b => {
+    const on = b.dataset.vrsta === v;
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-checked', on ? 'true' : 'false');
+  });
+}
 
 // ── TABS ──────────────────────────────────────────────────────────
 function switchTab(tab) {
@@ -724,16 +757,22 @@ async function razcleni() {
     body.besedilo = t;
   }
 
+  body.vrsta = vrstaPonudbe;
+
   show('step-vnos', false);
   show('step-loading', true);
   setStepActive(2);
 
-  // Dvofazni napredek: server pri AI ponudbah teče v dveh korakih (scoping →
-  // razgradnja), zato vrtimo sporočila po času, da uporabnik ve, da se dela.
-  const sporocila = [
+  // Unikatna ponudba na strežniku teče v dveh korakih (razumevanje → ocena po fazah),
+  // zato vrtimo sporočila po času, da uporabnik ve, da se dela.
+  const sporocila = vrstaPonudbe === 'unikatna' ? [
     'Claude analizira dokument...',
-    'Razčlenjujem procese stranke...',
-    'Sestavljam ponudbo in preverjam seštevke...'
+    'Razčlenjujem sklope projekta...',
+    'Sestavljam oceno po fazah, časovnico in preverjam seštevke...'
+  ] : [
+    'Claude analizira dokument...',
+    'Izbiram storitve iz cenika...',
+    'Sestavljam ponudbo...'
   ];
   let si = 0;
   const loadingEl = document.getElementById('loading-text');
@@ -934,6 +973,10 @@ function pociistiStanje() {
     if (Array.isArray(dop.tocke)) dop.tocke = dop.tocke.filter(t => t && t.trim());
     if (Array.isArray(dop.investicija)) dop.investicija = dop.investicija.filter(i => i && i.trim());
   }
+  const cas = stanje.casovnica;
+  if (cas && Array.isArray(cas.vrstice)) {
+    cas.vrstice = cas.vrstice.filter(v => v && [v.obdobje, v.naslov, v.opis].some(x => x && String(x).trim()));
+  }
 }
 
 function naprejNaDokument() {
@@ -1087,6 +1130,29 @@ function renderDoc() {
     </div>`;
   }
 
+  // — Časovnica (neobvezna; prazna v PDF izpade) —
+  h += `<div class="doc-sec">Časovnica in plan dela</div>`;
+  const cas = p.casovnica;
+  if (!cas || !Array.isArray(cas.vrstice) || !cas.vrstice.length) {
+    h += `<button class="doc-mini" onclick="docDodajCasovnico()">+ Dodaj časovnico</button>`;
+  } else {
+    h += `<div class="doc-meta"><span class="doc-meta-label">Naslov v PDF:</span> ${ed('casovnica.naslov', cas.naslov, 'Časovnica in plan dela')}</div>`;
+    h += `<table class="doc-table">
+      <thead><tr><th style="width:26%">Obdobje</th><th style="width:34%">Kaj se zgodi</th><th>Opis (neobvezno)</th><th class="x-cell"></th></tr></thead>
+      <tbody>`;
+    cas.vrstice.forEach((v, i) => {
+      h += `<tr>
+        <td>${ed(`casovnica.vrstice.${i}.obdobje`, v.obdobje, 'npr. 1. in 2. teden')}</td>
+        <td>${ed(`casovnica.vrstice.${i}.naslov`, v.naslov, 'npr. Potrditev dizajna')}</td>
+        <td>${ed(`casovnica.vrstice.${i}.opis`, v.opis, '—')}</td>
+        <td class="x-cell"><button class="doc-x" title="Odstrani vrstico" onclick="docOdstraniVrsticoCas(${i})">×</button></td>
+      </tr>`;
+    });
+    h += `</tbody></table>
+      <button class="doc-mini" onclick="docDodajVrsticoCas()">+ vrstica</button>
+      <button class="doc-mini" onclick="docOdstraniCasovnico()">Odstrani časovnico</button>`;
+  }
+
   // — Komercialist —
   h += `<div class="doc-sec">Komercialist</div>`;
   h += `<div class="doc-meta">${ed('IME_KOMERCIALISTA', p.IME_KOMERCIALISTA, 'Ime')} ·
@@ -1138,6 +1204,11 @@ function docDodajDopTocko() { flushEdits(); (stanje.dodatna_opcija.tocke = stanj
 function docOdstraniDopTocko(j) { flushEdits(); stanje.dodatna_opcija.tocke.splice(j, 1); renderDoc(); }
 function docDodajDopInv() { flushEdits(); (stanje.dodatna_opcija.investicija = stanje.dodatna_opcija.investicija || []).push(''); renderDoc(); }
 function docOdstraniDopInv(j) { flushEdits(); stanje.dodatna_opcija.investicija.splice(j, 1); renderDoc(); }
+const prazenRedCas = () => ({ obdobje: '', naslov: '', opis: '' });
+function docDodajCasovnico() { flushEdits(); stanje.casovnica = { naslov: '', vrstice: [prazenRedCas()] }; renderDoc(); }
+function docDodajVrsticoCas() { flushEdits(); (stanje.casovnica.vrstice = stanje.casovnica.vrstice || []).push(prazenRedCas()); renderDoc(); }
+function docOdstraniVrsticoCas(i) { flushEdits(); stanje.casovnica.vrstice.splice(i, 1); renderDoc(); }
+function docOdstraniCasovnico() { flushEdits(); delete stanje.casovnica; renderDoc(); }
 
 // Lepljenje v urljiva polja kot navadno besedilo (brez HTML formatiranja).
 document.addEventListener('DOMContentLoaded', () => {
@@ -1244,6 +1315,7 @@ const CILJI = {
   predpostavke: { oznaka: 'Predpostavke', polja: ['PREDPOSTAVKE'] },
   izkljucitve: { oznaka: 'V ceno ni zajeto', polja: ['IZKLUCITVE'] },
   placilo: { oznaka: 'Plačilni pogoji', polja: ['PLACILNI_POGOJI', 'VELJAVNOST_PONUDBE'] },
+  casovnica: { oznaka: 'Časovnica', polja: ['casovnica'] },
   zakljucek: { oznaka: 'Zaključek', polja: [] },
   podpis: { oznaka: 'Podpis', polja: ['IME_KOMERCIALISTA', 'NAZIV_KOMERCIALISTA', 'EMAIL_KOMERCIALISTA', 'TELEFON_KOMERCIALISTA'] },
   podjetje: { oznaka: 'O podjetju Acenta', polja: [] },
@@ -1625,7 +1697,11 @@ function osveziPredlogZamik() {
 // Vrstni red: najprej nastavi, nato odstrani (od zadaj, da indeksi ostanejo veljavni), nato dodaj.
 function predlogStanja() {
   const p = JSON.parse(JSON.stringify(predlog.osnova));
-  const sprejete = predlog.spremembe.filter((_, i) => odlocitve[i]);
+  const vse = predlog.spremembe.filter((_, i) => odlocitve[i]);
+  // Vrstice časovnice imajo svoj vrstni red (vstavljanje na mesto), ostalo gre po splošnem pravilu.
+  const jeVrsticaCas = s => s.pot === 'casovnica.vrstice' || s.pot.startsWith('casovnica.vrstice.');
+  const sprejete = vse.filter(s => !jeVrsticaCas(s));
+  const casOps = vse.filter(jeVrsticaCas);
   sprejete.filter(s => s.operacija === 'nastavi').forEach(s => setByPath(p, s.pot, s.potem));
   sprejete.filter(s => s.operacija === 'odstrani')
     .map(s => ({ stars: s.pot.replace(/\.\d+$/, ''), idx: Number(s.pot.split('.').pop()) }))
@@ -1635,6 +1711,22 @@ function predlogStanja() {
     if (!Array.isArray(getByPath(p, s.pot))) setByPath(p, s.pot, []);
     getByPath(p, s.pot).push(s.potem);
   });
+  if (casOps.length) {
+    // Indeksi se nanašajo na izvirne vrstice: najprej popravki polj, nato nov seznam
+    // z vstavki na svojih mestih in brez odstranjenih vrstic.
+    p.casovnica = p.casovnica || { naslov: '', vrstice: [] };
+    const izvirne = Array.isArray(p.casovnica.vrstice) ? p.casovnica.vrstice : [];
+    p.casovnica.vrstice = izvirne;
+    casOps.filter(s => s.operacija === 'nastavi').forEach(s => setByPath(p, s.pot, s.potem));
+    const odstranjene = new Set(casOps.filter(s => s.operacija === 'odstrani').map(s => Number(s.pot.split('.')[2])));
+    const vstavki = casOps.filter(s => s.operacija === 'dodaj');
+    const nove = [];
+    for (let i = 0; i <= izvirne.length; i++) {
+      vstavki.filter(s => (s.vstavi ?? izvirne.length) === i).forEach(s => nove.push({ ...s.objekt }));
+      if (i < izvirne.length && !odstranjene.has(i)) nove.push(izvirne[i]);
+    }
+    p.casovnica.vrstice = nove;
+  }
   p.oblika = { ...(p.oblika || {}) };
   predlog.oblika.forEach((o, i) => {
     if (!oblikaOdl[i]) return;

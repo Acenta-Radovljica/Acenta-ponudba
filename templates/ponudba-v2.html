@@ -257,6 +257,60 @@
     max-width: 680px;
   }
 
+  /* ── ČASOVNICA ──────────────────────────────────────── */
+  .timeline {
+    position: relative;
+    margin-top: 4px;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 187px;
+    top: 8px;
+    bottom: 14px;
+    width: 2px;
+    background: linear-gradient(180deg, var(--teal), rgba(0,175,170,0.15));
+  }
+  .tl-row {
+    display: grid;
+    grid-template-columns: 170px 36px 1fr;
+    align-items: start;
+    padding-bottom: 16px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+  .tl-when {
+    font-size: 9.5pt;
+    font-weight: 700;
+    color: var(--teal-dark);
+    text-align: right;
+    line-height: 1.4;
+  }
+  .tl-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--white);
+    border: 3px solid var(--teal);
+    margin: 2px auto 0;
+    position: relative;
+    z-index: 1;
+  }
+  .tl-title {
+    font-size: 10.5pt;
+    font-weight: 700;
+    color: var(--dark);
+    line-height: 1.4;
+  }
+  .tl-desc {
+    font-size: 9.5pt;
+    color: #555;
+    font-weight: 300;
+    line-height: 1.6;
+    margin-top: 2px;
+    max-width: 520px;
+  }
+
   /* ── SERVICE CARDS ──────────────────────────────────── */
   .services-grid {
     display: flex;
@@ -1210,7 +1264,7 @@
   <!-- SECTION 1 — Zakaj ta storitev? -->
   <div class="section" data-cilj="uvod">
     <div class="section-header">
-      <div class="section-number">1</div>
+      <div class="section-number">{{ST_UVOD}}</div>
       <h2 class="section-title">ZAKAJ <span class="accent">TA STORITEV?</span></h2>
     </div>
     <p class="section-text">{{UVODNI_ODSTAVEK}}</p>
@@ -1219,7 +1273,7 @@
   <!-- SECTION 2 — Kaj vključuje ponudba? -->
   <div class="section">
     <div class="section-header">
-      <div class="section-number">2</div>
+      <div class="section-number">{{ST_STORITVE}}</div>
       <h2 class="section-title">KAJ VKLJUČUJE <span class="accent">PONUDBA?</span></h2>
     </div>
     <div class="services-grid">
@@ -1235,7 +1289,7 @@
   <!-- SECTION 3 — Cenovna struktura -->
   <div class="section">
     <div class="section-header">
-      <div class="section-number">3</div>
+      <div class="section-number">{{ST_CENE}}</div>
       <h2 class="section-title">CENOVNA <span class="accent">STRUKTURA</span></h2>
     </div>
     {{FAZNI_BLOK_HTML}}
@@ -1250,6 +1304,9 @@
 
   <!-- SECTION 4 — Kako poteka sodelovanje? (dinamično, glej render.js) -->
   {{RAZDELEK_KORAKI}}
+
+  <!-- Časovnica (neobvezna, dinamično, glej render.js) -->
+  {{RAZDELEK_CASOVNICA}}
 
   <!-- CTA BOX -->
   <div class="cta-box" data-cilj="zakljucek">

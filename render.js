@@ -351,7 +351,22 @@ if (!podatki.DATUM) {
 }
 if (!podatki.STEVILKA_PONUDBE) podatki.STEVILKA_PONUDBE = `P${Date.now().toString().slice(-6)}`;
 
-// ── RAZDELEK 4 "Kako poteka sodelovanje" — DINAMIČNO ─────────────
+// ── ŠTEVILČENJE RAZDELKOV ────────────────────────────────────────
+// Številke tečejo zaporedno: koraki in časovnica sta neobvezna, "O podjetju" se zamakne sam.
+let stRazdelka = 0;
+const imaBesedilo = (v) => typeof v === 'string' && v.trim() !== '';
+// Naslov razdelka v slogu predloge: prva beseda temna, ostalo v barvi poudarka.
+const naslovRazdelka = (besedilo) => {
+  const v = besedilo.trim().toLocaleUpperCase('sl-SI');
+  const i = v.indexOf(' ');
+  return i < 0 ? `<span class="accent">${v}</span>` : `${v.slice(0, i)} <span class="accent">${v.slice(i + 1)}</span>`;
+};
+
+podatki.ST_UVOD = String(++stRazdelka);
+podatki.ST_STORITVE = String(++stRazdelka);
+podatki.ST_CENE = String(++stRazdelka);
+
+// ── RAZDELEK "Kako poteka sodelovanje" — DINAMIČNO ───────────────
 // Prej je PDF predloga vedno izrisala 4 trdo zakodirane korake, render.js pa
 // je praznim vsilil privzete naslove. Na verbatim poti (naložen popravljen
 // Word) je to DODAJALO izmišljene korake. Zdaj izrišemo TOČNO toliko korakov,
@@ -388,17 +403,40 @@ if (koraki.length) {
   podatki.RAZDELEK_KORAKI = `
   <div class="section">
     <div class="section-header">
-      <div class="section-number">4</div>
+      <div class="section-number">${++stRazdelka}</div>
       <h2 class="section-title">KAKO POTEKA <span class="accent">SODELOVANJE?</span></h2>
     </div>
     <div class="process-grid">${vrstice}
     </div>
   </div>`;
-  podatki.ST_RAZDELEK_PODJETJE = '5';
 } else {
-  podatki.RAZDELEK_KORAKI = '';
-  podatki.ST_RAZDELEK_PODJETJE = '4'; // razdelek korakov izpadel → preštevilči
+  podatki.RAZDELEK_KORAKI = ''; // razdelek korakov izpade, številke se zamaknejo same
 }
+
+// ── ČASOVNICA (neobvezna) ────────────────────────────────────────
+// casovnica = { naslov, vrstice: [{ obdobje, naslov, opis }] }; prazne vrstice izpadejo.
+const casovnica = podatki.casovnica && typeof podatki.casovnica === 'object' ? podatki.casovnica : {};
+const vrsticeCasovnice = (Array.isArray(casovnica.vrstice) ? casovnica.vrstice : [])
+  .filter(v => v && (imaBesedilo(v.obdobje) || imaBesedilo(v.naslov) || imaBesedilo(v.opis)));
+podatki.RAZDELEK_CASOVNICA = vrsticeCasovnice.length ? `
+  <div class="section" data-cilj="casovnica">
+    <div class="section-header">
+      <div class="section-number">${++stRazdelka}</div>
+      <h2 class="section-title">${naslovRazdelka(imaBesedilo(casovnica.naslov) ? casovnica.naslov : 'Časovnica in plan dela')}</h2>
+    </div>
+    <div class="timeline">${vrsticeCasovnice.map(v => `
+      <div class="tl-row">
+        <div class="tl-when">${v.obdobje || ''}</div>
+        <div class="tl-dot"></div>
+        <div class="tl-what">
+          ${imaBesedilo(v.naslov) ? `<div class="tl-title">${v.naslov}</div>` : ''}
+          ${imaBesedilo(v.opis) ? `<div class="tl-desc">${v.opis}</div>` : ''}
+        </div>
+      </div>`).join('')}
+    </div>
+  </div>` : '';
+
+podatki.ST_RAZDELEK_PODJETJE = String(++stRazdelka);
 
 // Fallback naslovi za korake (stari JSONi brez NASLOV_KORAK polj) — samo Word
 if (!podatki.NASLOV_KORAK_1) podatki.NASLOV_KORAK_1 = 'Vzpostavitev';

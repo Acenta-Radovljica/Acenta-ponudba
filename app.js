@@ -112,11 +112,18 @@ Vrni JSON točno v tej obliki:
     "uvod": "",
     "tocke": [],
     "investicija": []
+  },
+  "casovnica": {
+    "naslov": "",
+    "vrstice": []
   }
 }
 
 DODATNA OPCIJA (neobvezen blok):
 Polje "dodatna_opcija" izpolni SAMO, če zapiski eksplicitno omenjajo neobvezno dodatno opcijo (npr. odsek "DODATNO:" ali "DODATNA OPCIJA:", ali besede "neobvezno", "po želji", "dodatno se lahko"). Sicer pusti vsa polja prazna. Dodatne opcije NE izmišljuj.
+
+ČASOVNICA (neobvezen blok):
+Polje "casovnica" izpolni SAMO, če zapiski omenjajo roke, mesece, zaporedje izvedbe ali željo po planu dela. Vsaka vrstica: "obdobje" (npr. "Oktober 2026" ali "1. in 2. teden po potrditvi"), "naslov" (kaj se takrat zgodi), "opis" (en kratek stavek ali prazno). Datume in mesece piši samo, če so v zapiskih; sicer obdobja zapiši relativno od potrditve. Sicer pusti "vrstice" prazne.
 
 ═══════════════════════════════════════════════════════════════
 KRITIČNO PRAVILO — POLJE "faze" (poglobljen prikaz cene)
@@ -292,6 +299,14 @@ Polje "ure" izpolni SAMO, če je ura dejansko zapisana ob tej nalogi v dokumentu
 // predpostavke in odprta vprašanja se vrnejo v UI kot opozorila.
 const AI_VZOREC = /\b(ai|umetn\w*\s+intelig\w*|implementac\w*|avtomatiz\w*|agent\w*|chatbot\w*|asistent\w*|delavnic\w*)\b/i;
 
+// Unikatna ponudba ima vedno časovnico (plan dela iz faz); skupno pravilo za oba razgradnja prompta.
+const CASOVNICA_PRAVILO = `ČASOVNICA: izpolni polje "casovnica" s 3 do 6 vrsticami, ki sledijo fazam.
+   "obdobje" zapiši relativno od potrditve ponudbe (npr. "1. in 2. teden", "3. teden",
+   "po zaključku"), konkretne datume in mesece samo, če so v transkriptu. Trajanja se
+   morajo ujemati s polji "trajanje" pri fazah. "naslov" = kaj se takrat zgodi (ime faze
+   ali mejnik, npr. "Potrditev dizajna"), "opis" = en kratek stavek ali prazno. Zadnja
+   vrstica je predaja, zagon ali objava. "naslov" časovnice pusti prazen.`;
+
 const SCOPING_PROMPT = `Si izkušen svetovalec za AI implementacije v digitalni marketinški agenciji Acenta.si.
 Pred pripravo ponudbe moraš iz transkripta kickoff sestanka IZLUŠČITI, kaj stranka
 dejansko potrebuje: katere procese želi izboljšati, kako ti procesi potekajo danes,
@@ -371,6 +386,7 @@ METODA (izvedi po vrsti):
 7. "predpostavke" iz scopinga povzemi v polje "PREDPOSTAVKE" ponudbe (kratko,
    berljivo za stranko, brez internega žargona). "odprta_vprasanja" NE gredo v
    ponudbo; sistem jih komercialistu pokaže ločeno.
+8. ${CASOVNICA_PRAVILO}
 
 PRAVILA CEN IN VSEBINE:
 - Cene standardnih storitev vzemi iz cenika. Cene AI dela vedno izpelji iz ur in
@@ -407,13 +423,98 @@ SAMOKONTROLA pred oddajo (vse tri točke morajo držati):
 Cenik:
 ${cenik}`;
 
+// ── UNIKATNA PONUDBA ZA PROJEKTE, KI NISO AI (splet, prenova, kampanja, razvoj) ──
+// Ista dvostopenjska metoda kot pri AI (razumevanje → ocena po sklopih), a besedilo
+// promptov ne govori o AI procesih. AI projekti ostanejo na preverjenih promptih zgoraj.
+const OCENA_SCOPING_PROMPT = `Si izkušen vodja projektov v digitalni marketinški agenciji Acenta.si.
+Pred pripravo ocene moraš iz transkripta sestanka ali briefa IZLUŠČITI, kaj stranka
+dejansko naroča: katere sklope dela projekt obsega, kakšno je stanje danes, kaj želi
+stranka na koncu imeti, s katerimi sistemi in kakšnim obsegom (strani, jeziki, izdelki,
+kampanje, uporabniki) dela.
+
+TVOJA NALOGA NI pisanje ponudbe. Tvoja naloga je RAZUMEVANJE. Oceno bo iz tvojega
+izhoda sestavil naslednji korak, zato je vsaka tvoja napaka ali izmišljotina
+napaka v ponudbi, ki jo dobi stranka.
+
+METODA:
+1. Preberi celoten vir. Označi si vsako mesto, kjer stranka opiše, kaj želi narediti,
+   kaj jo moti pri sedanjem stanju ali kakšno zahtevo ima.
+2. Vsako tako zahtevo zapiši kot en zapis v polju "procesi". En zapis = en zaokrožen
+   sklop dela (npr. "prenos obstoječih vsebin in slik", "rezervacijski gumbi PHOBS",
+   "štirje jeziki"), NE oddelek podjetja in NE orodje samo po sebi.
+   Polja: "trenutni_potek" = kakšno je stanje danes, "zeleno_stanje" = kaj stranka želi
+   na koncu, "sistemi" = orodja in platforme, "volumen" = obseg (št. strani, jezikov,
+   izdelkov ...), "vpleteni" = kdo pri stranki ali pri nas sodeluje.
+3. Kar je povedano, prepiši. Česar NI povedano, NE izmišljuj.
+4. Ločeno zberi storitve, ki so standardne po ceniku (Google Ads, SEO, vzdrževanje ...).
+5. "tip_ponudbe" nastavi na "projekt".
+
+ZLATA PRAVILA:
+- Vsak zapis v "procesi" MORA imeti "dokaz": dobeseden citat ali tesno parafrazo iz vira.
+  Brez dokaza zapis ne obstaja. Ne dodajaj sklopov, ker bi bili "smiselni" za panogo.
+- Če podatka ni (obseg, rok, kdo pripravi vsebine), zapiši "ni podatka" in dodaj vnos v
+  "predpostavke" (razumna delovna predpostavka + zakaj) ter po potrebi v "odprta_vprasanja".
+- "odprta_vprasanja": največ 6, razvrščena po pomembnosti za natančnost ocene.
+- "datum_sestanka" izpolni SAMO, če je datum zapisan v viru.
+- Imena podjetij, oseb in orodij pusti v obliki iz vira.
+- VEDNO šumniki č, š, ž. NIKOLI ne uporabljaj — (em dash).`;
+
+const OCENA_RAZGRADNJA_PROMPT = `Si generator ponudb za digitalno marketinško agencijo Acenta.si za unikatne
+projekte (spletne strani, prenove, razvoj, kampanje po meri), ki jih ocenimo po sklopih in urah.
+Prejel boš SCOPING JSON: strukturiran povzetek sestanka s sklopi dela, sistemi, obsegom in
+predpostavkami. Iz njega sestavi ponudbo.
+
+KLJUČNO NAČELO: stranka mora v ponudbi PREPOZNATI SVOJ projekt. Faze in naloge gradiš IZ
+SKLOPOV v scoping JSON-u ("procesi"), ne iz šablone.
+
+METODA:
+1. Za vsak sklop določi naloge in oceni ure po realni hitrosti dela. Kjer je v ceniku
+   ustrezna postavka ali normativ, ga uporabi; kjer ga ni, oceni sam in to zabeleži v
+   "interna_opozorila" (npr. "Ure za prenos 256 URL-jev ocenjene brez normativa").
+2. Naloge združi v 2 do 5 faz po naravi projekta (npr. zgradba, izvedba dizajna, vsebine,
+   testiranje in objava). Ne uporabi 3 faz samo zato, ker je to privzeto.
+3. Faze in naloge poimenuj s strankinimi sklopi in sistemi, ne generično.
+   SLABO: "2. faza: izvedba". DOBRO: "2. faza: Izvedba dizajna za oba hotela v štirih jezikih".
+4. Cene: ure naloge krat urna postavka iz cenika (če je ni, 100 EUR/h in zabeleži v
+   "interna_opozorila"). Naloge se seštejejo v "skupaj_ure" in "skupaj_vrednost" faze,
+   vse faze v "vzpostavitev" storitve. Če se ne ujema, popravi ure, ne končne cene na roko.
+5. "trajanje" faze zapiši v tednih (npr. "2 tedna"), skupno koledarsko trajanje omeni v
+   "opomba" storitve (npr. "Koledarsko 4 do 6 tednov od potrjenega dizajna").
+6. "standardne_storitve" iz scopinga obravnavaj klasično: cene in opisi iz cenika, "faze": [].
+7. "predpostavke" iz scopinga povzemi v "PREDPOSTAVKE" (kratko, berljivo za stranko).
+   "odprta_vprasanja" NE gredo v ponudbo.
+8. ${CASOVNICA_PRAVILO}
+9. Koraki "Kako poteka sodelovanje" (NASLOV_KORAK_n, KORAK_n) opišejo sodelovanje z
+   vidika stranke (potrditev, dizajn, pregled, objava), ne ponavljajo faz.
+
+PRAVILA CEN IN VSEBINE:
+- FORMAT ŠTEVILK: "vzpostavitev" npr. "2.359,00 EUR" ali "/"; "mesecno" npr. "60,00 EUR/mes."
+  ali "/"; naloge "ure" npr. "3 h", "vrednost" npr. "214,50 €"; "skupaj_ure" "8 h",
+  "skupaj_vrednost" "572,00 €". Pika za tisočice, vejica za decimalke.
+- V "opomba" je PREPOVEDANO pisati karkoli o DDV.
+- Statistik, rezultatov in obljub NE izmišljuj; obljubiš lahko samo dobavljive stvari.
+- "UVODNI_ODSTAVEK": 3-4 stavki, imenuj konkreten cilj ali sklop stranke, brez splošnih fraz.
+- "dodatna_opcija" izpolni SAMO za sklop, ki ga stranka ni potrdila kot obveznega.
+- NIKOLI ne uporabljaj — (em dash). VEDNO šumniki č, š, ž. Imena pusti v obliki iz scopinga.
+- Privzeti podpisnik: IME_KOMERCIALISTA "Mateja", NAZIV_KOMERCIALISTA "Komercialistka",
+  EMAIL_KOMERCIALISTA "mateja@acenta.si".
+
+SAMOKONTROLA pred oddajo:
+1. PREPOZNAVNOST: ali bi faze lahko poslal drugi stranki brez sprememb? Če DA, prepiši.
+2. MATEMATIKA: vsote nalog, faz in "vzpostavitev" se ujemajo na cent.
+3. SLEDLJIVOST: vsak sklop iz scopinga je pokrit, nič ni dodano, česar v scopingu ni.
+4. ČASOVNICA: vrstice se ujemajo s fazami in njihovim trajanjem.
+
+Cenik:
+${cenik}`;
+
 // ── JSON sheme za structured output ────────────────────────────────
 // Prisilita veljaven JSON (API: tool use; SDK: outputFormat json_schema) in s tem
 // zapreta znano krhkost "Expected double-quoted property name" pri JSON.parse.
 const SCHEMA_SCOPING = {
   type: 'object',
   properties: {
-    tip_ponudbe: { type: 'string', enum: ['ai', 'mesano'] },
+    tip_ponudbe: { type: 'string', enum: ['ai', 'mesano', 'projekt'] },
     stranka: {
       type: 'object',
       properties: {
@@ -504,6 +605,20 @@ const SCHEMA_PONUDBA = {
         investicija: { type: 'array', items: { type: 'string' } }
       }
     },
+    casovnica: {
+      type: 'object',
+      properties: {
+        naslov: { type: 'string' },
+        vrstice: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: { obdobje: { type: 'string' }, naslov: { type: 'string' }, opis: { type: 'string' } },
+            required: ['obdobje', 'naslov']
+          }
+        }
+      }
+    },
     interna_opozorila: { type: 'array', items: { type: 'string' } }
   },
   required: ['NASLOV', 'IME_STRANKE', 'storitve']
@@ -535,7 +650,8 @@ PRAVILA:
    Za izklop nastavitve vrni vklopi=false.
 10. Komentar, ki ga ne moreš izvesti ne z besedilom ne z nastavitvijo (npr. barve, pisava, postavitev strani, logotip, vsebina razdelka O podjetju), vrni v "neizvedljivo" s kratkim razlogom.
 11. "opis" je en kratek stavek, kaj je sprememba naredila (npr. "Uvod prepisan po priloženem besedilu.").
-12. En komentar lahko zahteva več sprememb (npr. "kampanje" povsod zamenjaj z "mailingi"): naredi vse, vsako kot svojo spremembo.`;
+12. En komentar lahko zahteva več sprememb (npr. "kampanje" povsod zamenjaj z "mailingi"): naredi vse, vsako kot svojo spremembo.
+13. Časovnica: naslov je "casovnica.naslov", vrstice so "casovnica.vrstice.N.obdobje", ".naslov" in ".opis". Novo vrstico dodaš z operacijo "dodaj": na pot "casovnica.vrstice" za konec ali na pot "casovnica.vrstice.N" za vstavitev pred obstoječo vrstico N (šteto od 0, po izvirnem vrstnem redu); "vrednost" zapišeš v obliki "obdobje | naslov | opis" (opis je lahko prazen). Obstoječih vrstic za vstavljanje ne prestavljaj. Če ponudba časovnice še nima, jo ustvariš tako, da dodaš vrstice. Obdobja zapiši relativno od potrditve (npr. "1. in 2. teden"), datume in mesece samo, če so v ponudbi ali komentarju.`;
 
 const SCHEMA_POPRAVKI = {
   type: 'object',
@@ -585,7 +701,7 @@ const POPRAVLJIVA_POLJA = new Set([
   'KONTAKTNA_OSEBA', 'TELEFON_STRANKE', 'DODATNI_META', 'UVODNI_ODSTAVEK', 'PREDPOSTAVKE', 'IZKLUCITVE',
   'PLACILNI_POGOJI', 'VELJAVNOST_PONUDBE', 'IME_KOMERCIALISTA', 'NAZIV_KOMERCIALISTA', 'EMAIL_KOMERCIALISTA',
   'TELEFON_KOMERCIALISTA', 'NASLOV_KORAK_1', 'KORAK_1', 'NASLOV_KORAK_2', 'KORAK_2', 'NASLOV_KORAK_3', 'KORAK_3',
-  'NASLOV_KORAK_4', 'KORAK_4', 'storitve', 'dodatna_opcija'
+  'NASLOV_KORAK_4', 'KORAK_4', 'storitve', 'dodatna_opcija', 'casovnica'
 ]);
 // Seznami besedil, ki jih sme popravek ustvariti, če jih ponudba še nima.
 const SEZNAMI_BESEDIL = new Set(['tocke', 'opis', 'investicija']);
@@ -615,6 +731,10 @@ function oznakaPoti(deli, ponudba) {
     const rep = ostalo.slice(1).map(k => (/^\d+$/.test(k) ? String(Number(k) + 1) : (OZNAKE_POLJ[k] || k)));
     return [`Storitev »${naziv}«`, rep.join(' ')].filter(Boolean).join(' · ');
   }
+  if (glava === 'casovnica') {
+    const OZN = { naslov: 'naslov', vrstice: 'vrstica', obdobje: 'obdobje', opis: 'opis' };
+    return ['Časovnica', ostalo.map(k => (/^\d+$/.test(k) ? String(Number(k) + 1) : (OZN[k] || k))).join(' ')].filter(Boolean).join(' · ');
+  }
   if (glava === 'dodatna_opcija') {
     return ['Dodatna opcija', ostalo.map(k => (/^\d+$/.test(k) ? String(Number(k) + 1) : (OZNAKE_POLJ[k] || k))).join(' ')].filter(Boolean).join(' · ');
   }
@@ -623,7 +743,10 @@ function oznakaPoti(deli, ponudba) {
 
 // Preveri predlog modela proti dejanski ponudbi: neznane poti in tipi gredo ven,
 // "prej" vzamemo iz ponudbe, označimo spremembe cen in posege izven komentiranega dela.
-function preveriPopravke(odgovor, ponudba, komentarji) {
+function preveriPopravke(odgovor, izvirnik, komentarji) {
+  // Časovnica sme nastati iz komentarja, zato poti razrešujemo na kopiji s prazno časovnico.
+  const cas = izvirnik.casovnica && typeof izvirnik.casovnica === 'object' ? izvirnik.casovnica : {};
+  const ponudba = { ...izvirnik, casovnica: { naslov: '', ...cas, vrstice: Array.isArray(cas.vrstice) ? cas.vrstice : [] } };
   const poKomentarju = new Map(komentarji.map(k => [k.n, k]));
   const spremembe = [];
   const zavrnjene = [];
@@ -638,6 +761,25 @@ function preveriPopravke(odgovor, ponudba, komentarji) {
     const stars = deli.length > 1 ? vzemiPot(ponudba, deli.slice(0, -1)) : ponudba;
     let prej = '';
     let potem = String(s.vrednost ?? '').trim();
+    let objekt;
+
+    // Nova vrstica časovnice pride kot "obdobje | naslov | opis"; pot "casovnica.vrstice" doda
+    // na konec, "casovnica.vrstice.N" vstavi pred izvirno vrstico N.
+    const vstavek = op === 'dodaj' && /^casovnica\.vrstice(\.\d+)?$/.exec(pot);
+    if (vstavek) {
+      const [obdobje = '', naslov = '', ...opis] = potem.split('|').map(x => x.trim());
+      const vstavi = vstavek[1] ? Number(vstavek[1].slice(1)) : null;
+      if ((!obdobje && !naslov) || (vstavi !== null && vstavi > ponudba.casovnica.vrstice.length)) { zavrnjene.push(pot); continue; }
+      objekt = { obdobje, naslov, opis: opis.join(' | ') };
+      potem = [obdobje, naslov, objekt.opis].filter(Boolean).join(' · ');
+      spremembe.push({
+        komentar: poKomentarju.get(Number(s.komentar))?.n ?? null, operacija: op, pot: 'casovnica.vrstice', objekt, vstavi,
+        oznaka: vstavi === null ? 'Časovnica · nova vrstica na koncu' : `Časovnica · nova vrstica pred ${vstavi + 1}. vrstico`,
+        prej: '', potem, opis: String(s.opis || ''), je_cena: false,
+        izven: Boolean(poKomentarju.get(Number(s.komentar))?.polja.length && !poKomentarju.get(Number(s.komentar)).polja.some(p => p === 'casovnica'))
+      });
+      continue;
+    }
 
     const veljavnaPot = /^[A-Za-z_][A-Za-z_0-9]*(\.[A-Za-z_0-9]+)*$/.test(pot) && POPRAVLJIVA_POLJA.has(deli[0]);
     if (!veljavnaPot || !['nastavi', 'dodaj', 'odstrani'].includes(op)) { zavrnjene.push(pot); continue; }
@@ -790,7 +932,7 @@ async function pozeniRazclembo({ promptText, content, sistemskiPrompt, maxTokens
 // ── RAZČLENI z Claude (PDF / besedilo / popravljen Word) ───────────
 app.post('/razcleni', async (req, res) => {
   try {
-    const { pdf, besedilo, docx, ohraniVerbatim } = req.body;
+    const { pdf, besedilo, docx, ohraniVerbatim, vrsta } = req.body;
     const content = [];
     let vir = besedilo || '';
     let preveriDatum = Boolean(besedilo);
@@ -842,16 +984,23 @@ app.post('/razcleni', async (req, res) => {
     // AI/procesne ponudbe (router AI_VZOREC) gredo dvostopenjsko:
     // scoping (razumevanje procesov) → razgradnja (faze iz dejanskih procesov).
     // Velja samo za besedilo/docx-brief; verbatim Word in PDF ostaneta enostopenjska.
-    const dvostopenjsko = Boolean(promptText) && !ohraniVerbatim && AI_VZOREC.test(vir);
+    // Vrsta ponudbe iz 1. koraka: "tipska" = postavke iz cenika (en korak), "unikatna" =
+    // ocena po fazah in urah (dva koraka). Brez izbire (stari klici) app ugiba kot prej.
+    const dvostopenjsko = !ohraniVerbatim && (
+      vrsta === 'unikatna' ? true
+        : vrsta === 'tipska' ? false
+          : Boolean(promptText) && AI_VZOREC.test(vir));
+    // AI projekti ostanejo na preverjenih AI promptih, ostali unikatni projekti dobijo splošno oceno.
+    const aiProjekt = AI_VZOREC.test(vir);
     const opozorilaAI = [];
     let surovi;
 
     if (dvostopenjsko) {
-      const vhod1 = `Transkript kickoff sestanka:\n\n${vir}`;
+      const vhod1 = `Transkript kickoff sestanka:\n\n${vir || '(priložen PDF)'}`;
       const scoping = await pozeniRazclembo({
-        promptText: vhod1,
-        content: [{ type: 'text', text: vhod1 }],
-        sistemskiPrompt: SCOPING_PROMPT,
+        promptText: pdf ? null : vhod1,   // PDF gre samo prek API (document blok)
+        content: [...(pdf ? [content[0]] : []), { type: 'text', text: vhod1 }],
+        sistemskiPrompt: aiProjekt ? SCOPING_PROMPT : OCENA_SCOPING_PROMPT,
         schema: SCHEMA_SCOPING,
         timeoutMs: 80000 // 2 klica morata skupaj ostati pod proxy limitom (~180 s)
       });
@@ -860,7 +1009,7 @@ app.post('/razcleni', async (req, res) => {
       surovi = await pozeniRazclembo({
         promptText: vhod2,
         content: [{ type: 'text', text: vhod2 }],
-        sistemskiPrompt: RAZGRADNJA_PROMPT,
+        sistemskiPrompt: aiProjekt ? RAZGRADNJA_PROMPT : OCENA_RAZGRADNJA_PROMPT,
         schema: SCHEMA_PONUDBA,
         timeoutMs: 80000
       });
