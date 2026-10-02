@@ -7,7 +7,7 @@ globs: src/*.js
 
 ## Always Use Tool Use — Never Raw JSON Prompt
 
-The pipeline uses Anthropic Tool Use (`tool_choice: { type: 'tool', name: 'pripravi_ponudbo' }`) to force structured output. This guarantees valid JSON without parsing hacks.
+The pipeline uses Anthropic Tool Use (tool `oddaj_rezultat`) for structured output. This guarantees valid JSON without parsing hacks. Sonnet 5.5 rejects forced `tool_choice` (`tool`/`any` → 400), so the call uses `tool_choice: { type: 'auto' }` plus a prompt instruction and retries once if no tool call came back.
 
 NEVER revert to asking Claude to "return valid JSON" in the prompt text — that approach breaks randomly and requires fragile markdown-stripping code.
 
@@ -75,4 +75,6 @@ mesecno: {
 
 ## Model Selection
 
-Use `claude-sonnet-4-6` for proposal generation — it's fast, cheap, and the Tool Use schema constrains quality. Do not use haiku (too weak for Slovenian business writing) or opus (unnecessary cost for structured output).
+Use `claude-sonnet-5-5` (constant `MODEL` in app.js, same on the API and Agent SDK paths) — it's fast, cheap, and the Tool Use schema constrains quality. Do not use haiku (too weak for Slovenian business writing) or opus (unnecessary cost for structured output).
+
+Sonnet 5.5 rejects `thinking: { type: 'disabled' }` (400). API path: `thinking: { type: 'between_tools' }`. Agent SDK path: the CLI does not accept `between_tools`, so `thinking: { type: 'adaptive' }` + `effort: 'low'` and `maxTurns: 2` (StructuredOutput call + closing turn).

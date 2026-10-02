@@ -13,6 +13,7 @@ app.use(express.json({ limit: '20mb' }));
 app.use(express.static(resolve(__dirname, 'public')));
 
 const anthropic = new Anthropic();
+const MODEL = 'claude-sonnet-5-5'; // isti model na API in naročninski (Agent SDK) poti
 const cenik = readFileSync(resolve(__dirname, 'cenik.md'), 'utf8');
 
 const SISTEM_PROMPT = `Si generator ponudb za digitalno marketinško agencijo Acenta.si.
@@ -482,33 +483,38 @@ const SCHEMA_PONUDBA = {
 
 // ── Claudov klic (skupno za vse vire vhoda) ────────────────────────
 async function razcleniVsebino(content, sistemskiPrompt = SISTEM_PROMPT, maxTokens = 4096, schema = null) {
-  // S shemo: prisiljen tool use → API vrne validiran objekt, JSON.parse odpade.
+  // S shemo: tool use → API vrne objekt, JSON.parse odpade. Sonnet 5.5 zavrne vsiljen
+  // tool_choice (400), zato 'auto' + navodilo v promptu + en ponovni poskus, če klica ni.
   if (schema) {
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: maxTokens,
-      system: sistemskiPrompt,
-      messages: [{ role: 'user', content }],
-      tools: [{
-        name: 'oddaj_rezultat',
-        description: 'Oddaj razčlenjene podatke v zahtevani strukturirani obliki.',
-        input_schema: schema
-      }],
-      tool_choice: { type: 'tool', name: 'oddaj_rezultat' }
-    });
-    const blok = response.content.find(b => b.type === 'tool_use');
-    if (!blok) throw new Error('Model ni vrnil strukturiranega izhoda.');
-    return blok.input;
+    for (let poskus = 1; poskus <= 2; poskus++) {
+      const response = await anthropic.messages.create({
+        model: MODEL,
+        max_tokens: maxTokens,
+        thinking: { type: 'between_tools' }, // brez razmišljanja, kot prej na Sonnet 4.6
+        system: sistemskiPrompt + '\n\nRezultat oddaj izključno s klicem orodja oddaj_rezultat.',
+        messages: [{ role: 'user', content }],
+        tools: [{
+          name: 'oddaj_rezultat',
+          description: 'Oddaj razčlenjene podatke v zahtevani strukturirani obliki.',
+          input_schema: schema
+        }],
+        tool_choice: { type: 'auto' }
+      });
+      const blok = response.content.find(b => b.type === 'tool_use');
+      if (blok) return blok.input;
+    }
+    throw new Error('Model ni vrnil strukturiranega izhoda.');
   }
 
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',
+    model: MODEL,
     max_tokens: maxTokens,
+    thinking: { type: 'between_tools' },
     system: sistemskiPrompt,
     messages: [{ role: 'user', content }]
   });
 
-  const text = response.content[0].text.trim()
+  const text = response.content.find(b => b.type === 'text').text.trim()
     .replace(/^```json\n?/, '')
     .replace(/\n?```$/, '');
 
@@ -537,11 +543,15 @@ async function razcleniVsebinoSDK(besedilo, sistemskiPrompt = SISTEM_PROMPT, sch
       prompt: besedilo,
       options: {
         systemPrompt: sistemskiPrompt, // navaden prompt (ne Claude Code preset)
+        model: MODEL,
         allowedTools: [],              // brez orodij — gre le za pretvorbo besedilo→JSON
-        maxTurns: 1,                   // en sam obrat
+        maxTurns: 2,                   // Sonnet 5.5: klic StructuredOutput + zaključni obrat (pri 1 vrne error_max_turns)
         settingSources: [],            // ne nalagaj .claude/settings datotek
         env: SDK_ENV,                  // brez API ključa → naročnina
-        thinking: { type: 'disabled' }, // CLI privzeto vklopi razmišljanje (+50 s) → izklop = ~3x hitreje, brez proxy timeouta
+        // Sonnet 5.5 zavrne thinking 'disabled' (400), CLI pa ne pozna 'between_tools'
+        // → prilagodljivo razmišljanje z nizkim naporom ostane hitro (brez proxy timeouta).
+        thinking: { type: 'adaptive' },
+        effort: 'low',
         abortController: ctrl,         // prekini po timeoutMs
         // Structured output: CLI validira izhod proti shemi → JSON.parse odpade.
         ...(schema ? { outputFormat: { type: 'json_schema', schema } } : {}),
