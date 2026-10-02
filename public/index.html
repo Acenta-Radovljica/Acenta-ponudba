@@ -212,6 +212,9 @@
   .vrsta-opt.active .vrsta-ime { color: var(--teal); }
   .vrsta-opis { font-size: 12px; color: var(--gray); margin-top: 3px; line-height: 1.5; }
   @media (max-width: 600px) { .vrsta { grid-template-columns: 1fr; } }
+  .navodila-ai { margin-top: 18px; }
+  .navodila-ai textarea { min-height: 70px; }
+  .navodila-opomba { font-size: 11px; color: var(--gray); line-height: 1.5; }
 
   /* OBLIKA PONUDBE (korak 3) */
   .oblika-box { border: 1px solid var(--border); border-radius: 8px; padding: 16px 18px; margin-top: 18px; background: #fafcfc; }
@@ -369,6 +372,12 @@
 
       <div id="tab-text" class="hidden">
         <textarea id="besedilo" placeholder="Prilepi transkript kickoff sestanka ali besedilo obstoječe ponudbe..."></textarea>
+      </div>
+
+      <div class="field navodila-ai">
+        <label for="navodila">Navodila za AI (neobvezno)</label>
+        <textarea id="navodila" placeholder="Npr. komercialist je Miha Kovačič, miha@acenta.si · plačilo 30 % ob potrditvi, 70 % po zaključku · samo Google Ads, brez Mete"></textarea>
+        <div class="navodila-opomba">Imajo prednost pred privzetimi nastavitvami (podpisnik, pogoji, obseg). Cen, ki jih ni v ceniku ali v navodilih, in statistik si AI tudi z navodilom ne izmisli.</div>
       </div>
 
       <div id="vnos-napaka" class="napaka hidden"></div>
@@ -758,6 +767,8 @@ async function razcleni() {
   }
 
   body.vrsta = vrstaPonudbe;
+  const navodila = document.getElementById('navodila').value.trim();
+  if (navodila) body.navodila = navodila;
 
   show('step-vnos', false);
   show('step-loading', true);
