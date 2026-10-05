@@ -3,13 +3,13 @@
 //
 // Bere:  PONUDBA_JSON (env) ali data/ponudba.json
 // Piše:  Word → OSNUTKI_MAPA  (env var ali ./output/osnutki)
-//        PDF  → IZHOD_MAPA    (env var ali ./output)
+//        PDF  → PDF_OUT (točna pot, ki jo da app) ali IZHOD_MAPA (env var ali ./output)
 //        HTML → HTML_OUT      (env var ali ./output/predogled.html) — predogled v appu, enak kot PDF
 
 import HTMLtoDOCX from 'html-to-docx';
 import puppeteer from 'puppeteer';
 import { readFileSync, writeFileSync, mkdirSync } from 'fs';
-import { resolve } from 'path';
+import { resolve, dirname } from 'path';
 
 const ukaz = process.argv[2];
 if (!ukaz || !['word', 'pdf', 'html'].includes(ukaz)) {
@@ -544,8 +544,8 @@ if (ukaz === 'word') {
 // ── PDF ──────────────────────────────────────────────────────────
 if (ukaz === 'pdf') {
   const izhodMapa = process.env.IZHOD_MAPA || resolve(process.cwd(), 'output');
-  mkdirSync(izhodMapa, { recursive: true });
-  const pdfPot = resolve(izhodMapa, `ponudba-${ime}.pdf`);
+  const pdfPot = process.env.PDF_OUT || resolve(izhodMapa, `ponudba-${ime}.pdf`);
+  mkdirSync(dirname(pdfPot), { recursive: true });
 
   const browser = await puppeteer.launch({
     headless: true,

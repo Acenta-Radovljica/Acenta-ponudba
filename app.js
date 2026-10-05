@@ -1085,23 +1085,29 @@ app.post('/generiraj-word', async (req, res) => {
 });
 
 // ── GENERIRAJ PDF ──────────────────────────────────────────────────
+// Vsak izvoz dobi svoj JSON in svoj PDF (id v imenu), kot predogled. Prej sta se dva
+// hkratna izvoza delila data/ponudba.json in ponudba-<stranka>.pdf, zato je lahko
+// komercialist prenesel tujo ponudbo (dva izvoza v istih sekundah ali ista stranka).
 app.post('/generiraj-pdf', async (req, res) => {
+  const id = randomBytes(6).toString('hex');
+  const jsonPot = resolve(tmpdir(), `ponudba-pdf-${id}.json`);
   try {
-    // Če so v telesu podatki (npr. iz popravljenega Worda), jih shrani
-    // pred renderjem; prazno telo {} pomeni: uporabi obstoječ ponudba.json.
-    if (req.body && Object.keys(req.body).length > 0) {
-      mkdirSync(resolve(__dirname, 'data'), { recursive: true });
-      const podatki = normalizirajPonudbo(req.body, { preveriDatum: false }).data;
-      writeFileSync(
-        resolve(__dirname, 'data/ponudba.json'),
-        JSON.stringify(podatki, null, 2)
-      );
-    }
-    const pot = await runRender('pdf');
+    // Prazno telo {} = stara pot: vzemi obstoječ data/ponudba.json.
+    const telo = req.body && Object.keys(req.body).length > 0
+      ? req.body
+      : JSON.parse(readFileSync(resolve(__dirname, 'data/ponudba.json'), 'utf8'));
+    const podatki = normalizirajPonudbo(telo, { preveriDatum: false }).data;
+    writeFileSync(jsonPot, JSON.stringify(podatki));
+    const ime = (podatki.IME_STRANKE || 'ponudba').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+    const izhodMapa = process.env.IZHOD_MAPA || resolve(__dirname, 'output');
+    const pdfPot = resolve(izhodMapa, `ponudba-${ime}-${id}.pdf`);
+    const pot = await runRender('pdf', { PONUDBA_JSON: jsonPot, PDF_OUT: pdfPot });
     res.json({ ok: true, datoteka: basename(pot) });
   } catch (err) {
     console.error('Napaka /generiraj-pdf:', err.message);
     res.status(500).json({ ok: false, napaka: err.message });
+  } finally {
+    try { unlinkSync(jsonPot); } catch {}
   }
 });
 
@@ -1200,7 +1206,8 @@ function prenesiIzMape(res, mapa, datoteka, dovoljenaKoncnica) {
     return res.status(404).json({ ok: false, napaka: 'Datoteka ne obstaja.' });
   }
 
-  res.download(pot);
+  // Uporabnik dobi ime brez id-ja izvoza (ponudba-<stranka>.pdf), kot prej.
+  res.download(pot, ime.replace(/-[0-9a-f]{12}(\.pdf)$/, '$1'));
 }
 
 function normalizirajPonudbo(data, { vir = '', preveriDatum = false } = {}) {
