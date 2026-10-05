@@ -4,10 +4,12 @@ Sistem za pripravo prodajnih ponudb za Acenta d.o.o. (digitalna marketinška age
 
 ## Kako deluje
 
-1. Uporabnik pokliče `/ponudba` skill in prilepi transkript kickoff sestanka
-2. Claude prebere cenik (`cenik.md`), sestavi `data/ponudba.json`
-3. `render.js word` generira Word osnutek za pregled
-4. Po potrditvi `render.js pdf` generira končni PDF
+Ponudbe se pripravljajo v appu `app.js` (https://ponudbe.deploy.acenta.si): brief ali transkript →
+`/razcleni` (tipska ali unikatna) → urejanje → `/predogled` s komentarji in `/popravi` → `/generiraj-pdf`.
+Vsa pravila ponudb (cenik, varovala, seštevki, podpisnik) so v `app.js`.
+
+Iz terminala gre isto prek globalnega skilla `/ponudba` (`~/.claude/skills/ponudba`), ki samo kliče
+te endpointe. Ponudbe ne sestavlja sam.
 
 ## Ukazi
 
@@ -34,12 +36,12 @@ Brez `.env` se datoteke shranijo v `output/` znotraj mape ponudbe.
 
 ## Datoteke
 
-- `render.js` — generira Word in PDF iz `data/ponudba.json`
-- `cenik.md` — cenik storitev (Claude ga bere pri sestavljanju ponudbe)
+- `app.js` — app (endpointi, prompti, sheme, varovala)
+- `render.js` — generira PDF, HTML predogled in Word iz JSON-a (`PONUDBA_JSON`, `PDF_OUT`, `HTML_OUT`)
+- `cenik.md` — cenik storitev (bere ga app pri razčlembi)
 - `templates/ponudba-v2.html` — PDF predloga
-- `templates/ponudba-word.html` — Word predloga
-- `data/ponudba.json` — trenutna ponudba (prepisana ob vsakem klicu)
-- `.claude/skills/ponudba/skill.md` — skill za `/ponudba` ukaz
+- `templates/ponudba-word.html` — Word predloga (zastarela, ne pozna nastavitev oblike in časovnice)
+- `data/ponudba.json` — samo za ročni `render.js` in staro pot `/generiraj-pdf` s praznim telesom
 
 ## Varnostna pravila
 
