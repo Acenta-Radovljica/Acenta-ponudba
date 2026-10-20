@@ -299,13 +299,13 @@ Polje "ure" izpolni SAMO, če je ura dejansko zapisana ob tej nalogi v dokumentu
 // predpostavke in odprta vprašanja se vrnejo v UI kot opozorila.
 const AI_VZOREC = /\b(ai|umetn\w*\s+intelig\w*|implementac\w*|avtomatiz\w*|agent\w*|chatbot\w*|asistent\w*|delavnic\w*)\b/i;
 
-// Urne postavke iz Metakocke (preverjeno 2. 10. 2026, enake kot v ceniku). Ocena vsako nalogo
-// obračuna po postavki za tisto vrsto dela, da se cena med zagoni ne razlikuje zaradi izbire postavke.
+// Urne postavke iz Metakocke (aktivni artikli, preverjeno 20. 10. 2026, enake kot v ceniku). Ocena vsako
+// nalogo obračuna po postavki za tisto vrsto dela, da se cena med zagoni ne razlikuje zaradi izbire postavke.
 const URNE_POSTAVKE = `URNE POSTAVKE (vsako nalogo obračunaj po postavki za njeno vrsto dela):
-   - razvoj, programiranje, postavitev, integracije, prenos vsebin, testiranje: DS1540 Programerska ura 66,00 EUR/h
-   - oblikovanje, dizajn, priprava vizualov: OBL2365 Oblikovalska ura 50,00 EUR/h
-   - vodenje projekta, usklajevanje, komunikacija s stranko: DS2242 Vodenje projekta ali podpora projektu 77,00 EUR/h
-   - svetovanje, analiza, načrtovanje, izobraževanje, delavnice: DS2241 Svetovalna ura 71,50 EUR/h
+   - razvoj, programiranje, postavitev, integracije, prenos vsebin, testiranje: Program. Ura Programerska ura 66,00 EUR/h
+   - oblikovanje, dizajn, priprava vizualov: Oblikovanje - 1 Oblikovalska ura 77,00 EUR/h
+   - vodenje projekta, usklajevanje, komunikacija s stranko: Vodenje projekta Vodenje projekta ali podpora projektu 77,00 EUR/h
+   - svetovanje, analiza, načrtovanje, izobraževanje, delavnice: Svetovanje Svetovalna ura 125,00 EUR/h
    Druge postavke uporabi samo, če cenik za to delo ima svojo. Nikoli ne izmišljuj urne postavke.`;
 
 // Unikatna ponudba ima vedno časovnico (plan dela iz faz); skupno pravilo za oba razgradnja prompta.
@@ -400,7 +400,7 @@ METODA (izvedi po vrsti):
 
 PRAVILA CEN IN VSEBINE:
 - Cene standardnih storitev vzemi iz cenika. Cene AI dela vedno izpelji iz ur in
-  urne postavke; pavšal AI2409 uporabi samo, če projekt ustreza njegovemu opisu
+  urne postavke; pavšal "AI - 7" (AI - Agent / proces) uporabi samo, če projekt ustreza njegovemu opisu
   (majhen, jasno omejen AI proces brez integracij).
 - FORMAT ŠTEVILK (slovenski zapis, dosledno povsod): "vzpostavitev" npr.
   "2.359,00 EUR" ali "/"; "mesecno" npr. "60,00 EUR/mes." ali "/"; pri nalogah
@@ -489,7 +489,7 @@ METODA:
    "skupaj_ure" in "skupaj_vrednost" faze, vse faze v "vzpostavitev" storitve. Če se ne
    ujema, popravi ure, ne končne cene na roko.
    ${URNE_POSTAVKE}
-   PRIMERJALNA TOČKA za spletno stran po meri: Acentin paket SS2399 "Izdelava spletne strani"
+   PRIMERJALNA TOČKA za spletno stran po meri: Acentin paket "Izdelava strani - 1" (Izdelava spletne strani)
    obsega 50 h programiranja in 7,5 h vodenja projekta. Ure prilagodi obsegu (jeziki, število
    tipov strani, integracije), a če tvoja ocena za podobno stran odstopa za več kot tretjino,
    to z razlogom zapiši v "interna_opozorila".
